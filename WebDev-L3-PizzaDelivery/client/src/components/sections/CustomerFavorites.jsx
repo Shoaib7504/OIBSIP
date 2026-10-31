@@ -1,18 +1,36 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import { SectionHeader } from "../common/SectionHeader";
 import { VegBadge } from "../common/Badge";
 import { RatingStars } from "../common/RatingStars";
 import { Button } from "../common/Button";
 import { useCart } from "../../context/CartContext";
 import { customerFavorites } from "../../data/pizzasData";
+import { usePizzas } from "../../hooks/usePizzas";
+import { normalizePizzas } from "../../utils/pizzaUtils";
 import ingredientPattern from "../../assets/images/ingredient-pattern.svg";
 import vegitableSvg from "../../assets/images/vegitable.svg";
 
 export const CustomerFavorites = () => {
   const { addToCart, setActivePizzaModal } = useCart();
   const shouldReduceMotion = useReducedMotion();
+  const { data } = usePizzas();
+
+  const backendPizzas = data?.data || [];
+
+  const displayFavorites = useMemo(() => {
+    if (backendPizzas.length >= 3) {
+      // Find matching favorites or take top 3 highest rated
+      const normalized = normalizePizzas(backendPizzas);
+      const matches = normalized.filter((p) =>
+        /margherita|pepperoni|bbq/i.test(p.name)
+      );
+      if (matches.length >= 3) return matches.slice(0, 3);
+      return normalized.slice(0, 3);
+    }
+    return normalizePizzas(customerFavorites);
+  }, [backendPizzas]);
 
   return (
     <section
@@ -65,7 +83,7 @@ export const CustomerFavorites = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span>Crafted with Crisp Farm-Fresh Vegetables & Mozzarella</span>
+            <span>Crafted with Crisp Farm-Fresh Vegetables &amp; Mozzarella</span>
           </div>
 
           <SectionHeader
@@ -77,7 +95,7 @@ export const CustomerFavorites = () => {
 
         {/* 3 Featured Cards Grid with Overlapping Pizza Disc Images */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-14 lg:gap-8 pt-16 pb-8">
-          {customerFavorites.map((pizza, index) => (
+          {displayFavorites.map((pizza, index) => (
             <motion.div
               key={pizza.id}
               initial={{ opacity: 0, y: 40 }}
@@ -91,7 +109,10 @@ export const CustomerFavorites = () => {
               <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 sm:w-36 sm:h-36">
                 <div className="relative w-full h-full">
                   {/* Shadow beneath plate */}
-                  <div className="absolute inset-2 rounded-full bg-[#351B17]/25 blur-md translate-y-2 pointer-events-none" aria-hidden="true" />
+                  <div
+                    className="absolute inset-2 rounded-full bg-[#351B17]/25 blur-md translate-y-2 pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <motion.img
                     whileHover={shouldReduceMotion ? {} : { scale: 1.08, rotate: 12 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -99,6 +120,7 @@ export const CustomerFavorites = () => {
                     alt={`Top-down view of ${pizza.name}`}
                     onClick={() => setActivePizzaModal(pizza)}
                     className="w-full h-full object-cover rounded-full border-4 border-white shadow-md relative z-10 cursor-pointer"
+                    loading="lazy"
                   />
                 </div>
               </div>
@@ -109,7 +131,7 @@ export const CustomerFavorites = () => {
                 <div className="flex items-center justify-between mb-3">
                   <VegBadge isVeg={pizza.isVeg} />
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#941508] bg-white/80 px-2.5 py-0.5 rounded-full border border-[#941508]/15">
-                    {pizza.badge}
+                    {pizza.badge || (pizza.isVeg ? "100% Veg" : "Bestseller")}
                   </span>
                 </div>
 
@@ -126,13 +148,16 @@ export const CustomerFavorites = () => {
                   <RatingStars rating={pizza.rating} reviews={pizza.reviews} />
                 </div>
 
-                {/* Description - Darkened to #4A261F for WCAG AA compliance (>6.2:1 contrast) */}
+                {/* Description */}
                 <p className="mt-3 text-xs sm:text-sm text-[#4A261F] font-medium leading-relaxed line-clamp-3">
                   {pizza.description}
                 </p>
 
                 {/* Size Pills */}
-                <div className="mt-4 flex items-center gap-1.5 justify-center md:justify-start" aria-label="Available sizes">
+                <div
+                  className="mt-4 flex items-center gap-1.5 justify-center md:justify-start"
+                  aria-label="Available sizes"
+                >
                   {["Small", "Medium", "Large"].map((sz) => (
                     <span
                       key={sz}
@@ -152,7 +177,7 @@ export const CustomerFavorites = () => {
                     Starting at
                   </span>
                   <span className="text-xl sm:text-2xl font-black text-[#941508]">
-                    ${pizza.price.toFixed(2)}
+                    ${Number(pizza.price).toFixed(2)}
                   </span>
                 </div>
 
@@ -161,7 +186,7 @@ export const CustomerFavorites = () => {
                   variant="primary"
                   size="sm"
                   icon={ShoppingBag}
-                  aria-label={`Order ${pizza.name} for $${pizza.price.toFixed(2)}`}
+                  aria-label={`Order ${pizza.name} for $${Number(pizza.price).toFixed(2)}`}
                 >
                   Order Now
                 </Button>

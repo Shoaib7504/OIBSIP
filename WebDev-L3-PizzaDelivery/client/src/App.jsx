@@ -11,7 +11,7 @@ import { CartProvider } from "./context/CartContext";
 import { OrderInventoryProvider } from "./context/OrderInventoryContext";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
-
+import { ProtectedRoute, PublicRoute } from "./Routes/ProtectedRoute";
 // Modals & Overlays
 import { CartDrawer } from "./components/layout/CartDrawer";
 import { CustomizerModal } from "./components/modals/CustomizerModal";
@@ -25,7 +25,7 @@ import { Login } from "./pages/auth/Login";
 import { Register } from "./pages/auth/Register";
 import { UserDashboard } from "./components/dashboard/UserDashboard";
 import { AdminDashboard } from "./components/dashboard/AdminDashboard";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 /**
  * Scroll to top on route transition
@@ -45,12 +45,13 @@ function ScrollToTop() {
  */
 function FloatingRouteSwitcher() {
   const location = useLocation();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   const links = [
     { label: "🍕 Menu", path: "/" },
     { label: "📦 My Orders", path: "/dashboard" },
-    { label: "🛡️ Admin", path: "/admin" },
-    { label: "👤 Sign In", path: "/login" },
+    ...(isAdmin ? [{ label: "🛡️ Admin", path: "/admin" }] : []),
+    ...(!isAuthenticated ? [{ label: "👤 Sign In", path: "/login" }] : []),
   ];
 
   return (
@@ -66,8 +67,8 @@ function FloatingRouteSwitcher() {
             key={link.path}
             to={link.path}
             className={`px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer ${isActive
-                ? "bg-[#941508] text-white shadow-2xs"
-                : "text-[#351B17] hover:bg-[#FFF0B8]/60"
+              ? "bg-[#941508] text-white shadow-2xs"
+              : "text-[#351B17] hover:bg-[#FFF0B8]/60"
               }`}
           >
             {link.label}
@@ -90,10 +91,16 @@ function AppContent() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<UserDashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<UserDashboard />} />
+          </Route>
+          <Route element={<ProtectedRoute adminOnly />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
           {/* Catch-all redirect to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

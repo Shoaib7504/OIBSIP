@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -11,18 +11,28 @@ import {
   ShieldCheck,
   User,
   LogIn,
+  LogOut,
+  ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { totalItemsCount, setIsCartOpen, setIsSearchOpen } = useCart();
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
+  const { totalItemsCount, setIsCartOpen, setIsSearchOpen, showToast } = useCart();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+
   const location = useLocation();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   const isHome = location.pathname === "/";
 
+  // Track window scroll for glassmorphism effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -30,6 +40,43 @@ export const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsUserDropdownOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  // Close dropdown and mobile menu on route change
+  useEffect(() => {
+    setIsUserDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    logout();
+    setIsUserDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+    showToast("Logged out successfully. See you again soon!", "info");
+    navigate("/login", { replace: true });
+  };
 
   // Landing page section links
   const sectionLinks = [
@@ -41,19 +88,26 @@ export const Navbar = () => {
     { name: "Contact", href: "/#footer" },
   ];
 
-  // Route view links
+  // Route view links (filtered strictly by admin privileges)
   const navRoutes = [
     {
       name: "My Orders",
       path: "/dashboard",
       icon: LayoutDashboard,
+      show: true,
     },
     {
       name: "Admin",
       path: "/admin",
       icon: ShieldCheck,
+      show: isAdmin === true, // Strictly hidden if user is not admin
     },
-  ];
+  ].filter((route) => route.show);
+
+  // Extract user display initial and first name
+  const displayName = user?.name || user?.fullName || "Pizza Craver";
+  const firstName = displayName.split(" ")[0];
+  const userInitial = firstName.charAt(0).toUpperCase() || "P";
 
   return (
     <>
@@ -114,7 +168,7 @@ export const Navbar = () => {
               {/* Separator */}
               <div className="w-px h-5 bg-[#351B17]/15 mx-1" aria-hidden="true" />
 
-              {/* Dashboard & Admin Routes */}
+              {/* Dashboard & Admin Routes (Admin route strictly omitted if not admin) */}
               {navRoutes.map((route) => {
                 const Icon = route.icon;
                 const isActive = location.pathname === route.path;
@@ -135,19 +189,150 @@ export const Navbar = () => {
                 );
               })}
 
-              {/* Sign In / Account Link */}
-              <Link
-                to="/login"
-                className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] min-h-[36px] ${
-                  location.pathname === "/login" || location.pathname === "/register"
-                    ? "bg-[#941508] text-white shadow-xs"
-                    : "text-[#941508] bg-[#FFF0B8]/60 hover:bg-[#FFF0B8] border border-[#E8D595]"
-                }`}
-                aria-current={location.pathname === "/login" ? "page" : undefined}
-              >
-                <User size={14} aria-hidden="true" />
-                <span>Sign In</span>
-              </Link>
+              {/* User Authentication Status Section */}
+              {isAuthenticated ? (
+                /* Advanced User Profile Dropdown */
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    aria-expanded={isUserDropdownOpen}
+                    aria-haspopup="true"
+                    className={`inline-flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full font-bold text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] border cursor-pointer ${
+                      isUserDropdownOpen
+                        ? "bg-[#FFF0B8] border-[#941508] text-[#941508] shadow-sm"
+                        : "bg-white/80 hover:bg-[#FFF0B8]/60 border-[#E8D595] text-[#351B17]"
+                    }`}
+                  >
+                    {/* User Avatar Circle */}
+                    <div className="w-7 h-7 rounded-full bg-[#941508] text-white font-black text-xs flex items-center justify-center shadow-2xs">
+                      {userInitial}
+                    </div>
+
+                    <span className="max-w-[100px] truncate">{firstName}</span>
+
+                    {isAdmin && (
+                      <span className="px-1.5 py-0.2 bg-[#941508] text-white text-[9px] font-black uppercase rounded-full tracking-wider">
+                        Admin
+                      </span>
+                    )}
+
+                    <ChevronDown
+                      size={14}
+                      className={`text-[#7A5C55] transition-transform duration-200 ${
+                        isUserDropdownOpen ? "rotate-180 text-[#941508]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Dropdown Popover */}
+                  <AnimatePresence>
+                    {isUserDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-[#E8D595] shadow-xl overflow-hidden z-50 text-left"
+                        role="menu"
+                        aria-label="User account menu"
+                      >
+                        {/* Dropdown Header Card */}
+                        <div className="p-4 bg-gradient-to-br from-[#FFF0B8]/60 via-[#FFFDF7] to-white border-b border-[#E8D595]/60">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-[#941508] text-white font-black text-sm flex items-center justify-center shadow-xs shrink-0">
+                              {userInitial}
+                            </div>
+                            <div className="overflow-hidden">
+                              <p className="font-extrabold text-sm text-[#351B17] truncate leading-tight">
+                                {displayName}
+                              </p>
+                              <p className="text-xs text-[#7A5C55] truncate font-medium">
+                                {user?.email || "customer@pizzacrave.com"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Role & Crave Status Badge */}
+                          <div className="flex items-center gap-2 mt-1">
+                            {isAdmin ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-[#941508] text-white tracking-wide">
+                                <ShieldCheck size={11} />
+                                Store Administrator
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFF0B8] text-[#941508] border border-[#E8D595]">
+                                <Sparkles size={11} className="text-[#F49A13]" />
+                                VIP Pizza Craver
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Navigation Items */}
+                        <div className="p-2 space-y-1">
+                          <Link
+                            to="/dashboard"
+                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-[#351B17] hover:bg-[#FFF0B8]/60 hover:text-[#941508] transition-colors"
+                            role="menuitem"
+                          >
+                            <LayoutDashboard size={16} className="text-[#941508]" />
+                            <span>My Orders &amp; Live Tracking</span>
+                          </Link>
+
+                          {/* Admin Dashboard: STRICTLY visible only if user is admin */}
+                          {isAdmin && (
+                            <Link
+                              to="/admin"
+                              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-[#941508] bg-[#FFF0B8]/40 hover:bg-[#FFF0B8] transition-colors border border-[#E8D595]/50"
+                              role="menuitem"
+                            >
+                              <ShieldCheck size={16} className="text-[#941508]" />
+                              <span>Admin Inventory &amp; Control</span>
+                            </Link>
+                          )}
+
+                          <a
+                            href="/#customize"
+                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-[#351B17] hover:bg-[#FFF0B8]/60 hover:text-[#941508] transition-colors"
+                            role="menuitem"
+                          >
+                            <Pizza size={16} className="text-[#F49A13]" />
+                            <span>Craft Custom Pizza</span>
+                          </a>
+                        </div>
+
+                        {/* Dropdown Footer: Logout Button */}
+                        <div className="p-2 border-t border-gray-100 bg-[#FFFDF7]/50">
+                          <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            role="menuitem"
+                          >
+                            <LogOut size={14} />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                /* Guest State: Sign In Button */
+                <Link
+                  to="/login"
+                  className={`inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] min-h-[36px] shadow-2xs ${
+                    location.pathname === "/login" || location.pathname === "/register"
+                      ? "bg-[#941508] text-white shadow-xs"
+                      : "text-white bg-[#941508] hover:bg-[#7d1106]"
+                  }`}
+                  aria-current={location.pathname === "/login" ? "page" : undefined}
+                >
+                  <LogIn size={14} aria-hidden="true" />
+                  <span>Sign In</span>
+                </Link>
+              )}
             </nav>
 
             {/* Right Action Icons */}
@@ -209,6 +394,30 @@ export const Navbar = () => {
             className="fixed top-[60px] sm:top-[68px] left-0 right-0 z-30 bg-[#FFFDF7] border-b border-[#941508]/15 shadow-xl px-6 py-6 md:hidden overflow-hidden"
           >
             <nav className="flex flex-col gap-2" aria-label="Mobile Navigation">
+              {/* Authenticated User Card Header in Mobile */}
+              {isAuthenticated && (
+                <div className="p-3.5 mb-2 bg-[#FFF0B8]/60 border border-[#E8D595] rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#941508] text-white font-black text-sm flex items-center justify-center shadow-xs">
+                      {userInitial}
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-sm text-[#351B17] leading-tight">
+                        {displayName}
+                      </p>
+                      <p className="text-[11px] text-[#7A5C55] font-medium">
+                        {user?.email || "customer@pizzacrave.com"}
+                      </p>
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#941508] text-white uppercase tracking-wider">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Section links */}
               {isHome ? (
                 sectionLinks.map((link) => (
@@ -234,7 +443,7 @@ export const Navbar = () => {
               {/* Divider */}
               <div className="h-px bg-[#351B17]/10 my-2" aria-hidden="true" />
 
-              {/* Route links */}
+              {/* Route links (Admin strictly omitted if not admin) */}
               {navRoutes.map((route) => {
                 const Icon = route.icon;
                 const isActive = location.pathname === route.path;
@@ -255,23 +464,36 @@ export const Navbar = () => {
                 );
               })}
 
-              {/* Sign In & Register links in mobile */}
+              {/* Mobile Auth Actions */}
               <div className="pt-2 border-t border-[#351B17]/10 flex flex-col gap-2">
-                <Link
-                  to="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-[#941508] text-white shadow-xs"
-                >
-                  <LogIn size={16} />
-                  Sign In
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl font-bold text-xs text-[#941508] bg-[#FFF0B8] border border-[#E8D595]"
-                >
-                  Create New Account
-                </Link>
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-red-600 text-white shadow-xs cursor-pointer hover:bg-red-700 transition-colors"
+                  >
+                    <LogOut size={16} />
+                    Sign Out ({firstName})
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-[#941508] text-white shadow-xs"
+                    >
+                      <LogIn size={16} />
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl font-bold text-xs text-[#941508] bg-[#FFF0B8] border border-[#E8D595]"
+                    >
+                      Create New Account
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </motion.div>

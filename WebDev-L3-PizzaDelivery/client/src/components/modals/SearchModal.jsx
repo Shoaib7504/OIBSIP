@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Search, X, Plus } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { regularFlavours, customerFavorites } from "../../data/pizzasData";
+import { usePizzas } from "../../hooks/usePizzas";
+import { normalizePizzas } from "../../utils/pizzaUtils";
 import { VegBadge } from "../common/Badge";
 
 export const SearchModal = () => {
@@ -22,9 +24,15 @@ export const SearchModal = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSearchOpen, setIsSearchOpen]);
 
+  const { data } = usePizzas();
+  const backendPizzas = data?.data || [];
+
   const allPizzas = useMemo(() => {
-    return [...customerFavorites, ...regularFlavours];
-  }, []);
+    if (backendPizzas.length > 0) {
+      return normalizePizzas(backendPizzas);
+    }
+    return normalizePizzas([...customerFavorites, ...regularFlavours]);
+  }, [backendPizzas]);
 
   const filteredPizzas = useMemo(() => {
     if (!searchTerm.trim()) return allPizzas.slice(0, 5);

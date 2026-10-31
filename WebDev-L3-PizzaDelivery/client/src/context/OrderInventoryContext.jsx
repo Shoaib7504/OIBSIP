@@ -7,16 +7,16 @@ import React, {
   useMemo,
 } from "react";
 
-// ─── Storage Keys ───────────────────────────────────────────────────────────
+// Storage Keys 
 const STORAGE_KEYS = {
   orders: "pizzacrave_orders",
   inventory: "pizzacrave_inventory",
 };
 
-// ─── BroadcastChannel Name 
+// BroadcastChannel Name 
 const SYNC_CHANNEL = "pizzacrave_sync";
 
-// ─── Initial Inventory Seed Data ────────────────────────────────────────────
+// Initial Inventory Seed Data 
 const INITIAL_INVENTORY = [
   // Pizza Bases
   { id: "base-1", category: "Pizza Bases", name: "Sourdough Regular", stock: 120, threshold: 20, unit: "units" },

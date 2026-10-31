@@ -1,21 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { ShoppingBag, Sparkles, Leaf, Flame } from "lucide-react";
+import { ShoppingBag, Sparkles, Leaf, Flame, AlertCircle } from "lucide-react";
 import { SectionHeader } from "../common/SectionHeader";
 import { Button } from "../common/Button";
 import { useCart } from "../../context/CartContext";
 import { regularFlavours } from "../../data/pizzasData";
+import { usePizzas } from "../../hooks/usePizzas";
+import { normalizePizzas } from "../../utils/pizzaUtils";
+
+/**
+ * Shimmering Skeleton Card for Loading State
+ */
+const PizzaSkeletonCard = () => (
+  <div className="bg-white rounded-3xl p-5 border border-[#941508]/10 shadow-2xs flex flex-col items-center text-center justify-between animate-pulse min-h-[380px]">
+    <div className="w-36 h-36 rounded-full bg-gray-200 my-2" />
+    <div className="w-full mt-3 space-y-2">
+      <div className="h-5 bg-gray-200 rounded-md w-3/4 mx-auto" />
+      <div className="h-3 bg-gray-200 rounded-md w-full" />
+      <div className="h-3 bg-gray-200 rounded-md w-5/6 mx-auto" />
+    </div>
+    <div className="w-full mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+      <div className="h-5 bg-gray-200 rounded-md w-14" />
+      <div className="h-9 bg-gray-200 rounded-full w-20" />
+    </div>
+  </div>
+);
 
 export const RegularFlavours = () => {
+  const { data, isLoading, isError } = usePizzas();
   const { addToCart, setActivePizzaModal } = useCart();
   const [activeFilter, setActiveFilter] = useState("all");
   const shouldReduceMotion = useReducedMotion();
 
-  const filteredFlavours = regularFlavours.filter((pizza) => {
-    if (activeFilter === "veg") return pizza.isVeg;
-    if (activeFilter === "non-veg") return !pizza.isVeg;
-    return true;
-  });
+  // Extract raw backend pizzas
+  const backendPizzas = data?.data || [];
+
+  // Determine active pizza list with resilient fallback to local data
+  const normalizedPizzas = useMemo(() => {
+    if (backendPizzas.length > 0) {
+      return normalizePizzas(backendPizzas);
+    }
+    return normalizePizzas(regularFlavours);
+  }, [backendPizzas]);
+
+  // Apply veg / non-veg filtering
+  const filteredFlavours = useMemo(() => {
+    return normalizedPizzas.filter((pizza) => {
+      if (activeFilter === "veg") return pizza.isVeg;
+      if (activeFilter === "non-veg") return !pizza.isVeg;
+      return true;
+    });
+  }, [normalizedPizzas, activeFilter]);
 
   const filterTabs = [
     { key: "all", label: "All Flavours", icon: Sparkles },
@@ -24,7 +59,11 @@ export const RegularFlavours = () => {
   ];
 
   return (
-    <section id="regular-flavours" className="py-16 md:py-24 relative overflow-hidden bg-[#FFFDF7]" aria-labelledby="regular-flavours-heading">
+    <section
+      id="regular-flavours"
+      className="py-16 md:py-24 relative overflow-hidden bg-[#FFFDF7]"
+      aria-labelledby="regular-flavours-heading"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           title="Our Regular Flavours"
@@ -53,7 +92,11 @@ export const RegularFlavours = () => {
                     : "bg-[#FFF0B8]/60 text-[#351B17] hover:bg-[#FFF0B8] border border-[#E8D595]"
                 }`}
               >
-                <Icon size={14} className={isSelected ? "text-white" : "text-[#941508]"} aria-hidden="true" />
+                <Icon
+                  size={14}
+                  className={isSelected ? "text-white" : "text-[#941508]"}
+                  aria-hidden="true"
+                />
                 <span>{tab.label}</span>
               </button>
             );
@@ -62,63 +105,97 @@ export const RegularFlavours = () => {
 
         {/* 8 Products 4x2 Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredFlavours.map((pizza, index) => (
-              <motion.div
-                key={pizza.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.35, delay: index * 0.04 }}
-                whileHover={shouldReduceMotion ? {} : { y: -6 }}
-                className="bg-white rounded-3xl p-5 border border-[#941508]/10 shadow-2xs hover:shadow-lg transition-all flex flex-col items-center text-center group justify-between"
-              >
-                {/* Circular Food Image with Plate styling */}
-                <div className="relative w-36 h-36 sm:w-40 sm:h-40 my-2 aspect-square">
-                  {/* Golden outer glow */}
-                  <div className="absolute inset-0 rounded-full bg-[#FFF0B8] border-2 border-[#E8D595] group-hover:scale-105 transition-transform" aria-hidden="true" />
-                  <motion.img
-                    whileHover={shouldReduceMotion ? {} : { rotate: 15 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                    src={pizza.image}
-                    alt={`Freshly baked ${pizza.name}`}
-                    onClick={() => setActivePizzaModal(pizza)}
-                    className="w-full h-full object-cover rounded-full p-2 relative z-10 cursor-pointer"
-                  />
-                </div>
+          {isLoading && backendPizzas.length === 0 ? (
+            // Shimmering Skeletons during loading
+            Array.from({ length: 8 }).map((_, idx) => (
+              <PizzaSkeletonCard key={`skeleton-${idx}`} />
+            ))
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {filteredFlavours.map((pizza, index) => {
+                const isOutOfStock = pizza.stock === 0;
 
-                {/* Info */}
-                <div className="w-full mt-3">
-                  <h3
-                    onClick={() => setActivePizzaModal(pizza)}
-                    className="font-black text-base text-[#351B17] group-hover:text-[#941508] transition-colors cursor-pointer truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-md"
+                return (
+                  <motion.div
+                    key={pizza.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.35, delay: index * 0.04 }}
+                    whileHover={shouldReduceMotion || isOutOfStock ? {} : { y: -6 }}
+                    className={`bg-white rounded-3xl p-5 border border-[#941508]/10 shadow-2xs hover:shadow-lg transition-all flex flex-col items-center text-center group justify-between relative ${
+                      isOutOfStock ? "opacity-75" : ""
+                    }`}
                   >
-                    {pizza.name}
-                  </h3>
-                  <p className="text-xs text-[#7A5C55] mt-1.5 min-h-[36px] line-clamp-2 leading-relaxed">
-                    {pizza.description}
-                  </p>
-                </div>
+                    {/* Out of Stock Badge */}
+                    {isOutOfStock && (
+                      <span className="absolute top-4 right-4 z-20 px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-xs">
+                        <AlertCircle size={10} />
+                        Sold Out
+                      </span>
+                    )}
 
-                {/* Bottom Row: Price & Order */}
-                <div className="w-full mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-sm font-black text-[#941508]">
-                    ${pizza.price.toFixed(2)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => addToCart(pizza)}
-                    className="px-4 py-2 rounded-full bg-[#941508] hover:bg-[#7a1106] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508]"
-                    aria-label={`Order ${pizza.name} for $${pizza.price.toFixed(2)}`}
-                  >
-                    <ShoppingBag size={14} aria-hidden="true" />
-                    Order
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                    {/* Circular Food Image with Plate styling */}
+                    <div className="relative w-36 h-36 sm:w-40 sm:h-40 my-2 aspect-square">
+                      {/* Golden outer glow */}
+                      <div
+                        className="absolute inset-0 rounded-full bg-[#FFF0B8] border-2 border-[#E8D595] group-hover:scale-105 transition-transform"
+                        aria-hidden="true"
+                      />
+                      <motion.img
+                        whileHover={shouldReduceMotion || isOutOfStock ? {} : { rotate: 15 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                        src={pizza.image}
+                        alt={`Freshly baked ${pizza.name}`}
+                        onClick={() => setActivePizzaModal(pizza)}
+                        className="w-full h-full object-cover rounded-full p-2 relative z-10 cursor-pointer"
+                        loading="lazy"
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="w-full mt-3">
+                      <h3
+                        onClick={() => setActivePizzaModal(pizza)}
+                        className="font-black text-base text-[#351B17] group-hover:text-[#941508] transition-colors cursor-pointer truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-md"
+                      >
+                        {pizza.name}
+                      </h3>
+                      <p className="text-xs text-[#7A5C55] mt-1.5 min-h-[36px] line-clamp-2 leading-relaxed">
+                        {pizza.description}
+                      </p>
+                    </div>
+
+                    {/* Bottom Row: Price & Order */}
+                    <div className="w-full mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-sm font-black text-[#941508]">
+                        ${Number(pizza.price).toFixed(2)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => !isOutOfStock && addToCart(pizza)}
+                        disabled={isOutOfStock}
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] ${
+                          isOutOfStock
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                            : "bg-[#941508] hover:bg-[#7a1106] text-white shadow-2xs active:scale-95 cursor-pointer"
+                        }`}
+                        aria-label={
+                          isOutOfStock
+                            ? `${pizza.name} is currently out of stock`
+                            : `Order ${pizza.name} for $${Number(pizza.price).toFixed(2)}`
+                        }
+                      >
+                        <ShoppingBag size={14} aria-hidden="true" />
+                        <span>{isOutOfStock ? "Out of Stock" : "Order"}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          )}
         </div>
 
         {/* View Full Menu CTA */}
