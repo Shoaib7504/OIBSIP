@@ -1,1 +1,131 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="46" fill="none" viewBox="0 0 48 46"><path fill="#863bff" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z" style="fill:#863bff;fill:color(display-p3 .5252 .23 1);fill-opacity:1"/><mask id="a" width="48" height="46" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M25.842 44.938c-.664.844-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.183c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.498 0-3.579-1.842-3.579H1.133c-.92 0-1.456-1.04-.92-1.787L9.91.473c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.578 1.842 3.578h11.377c.943 0 1.473 1.088.89 1.832L25.843 44.94z" style="fill:#000;fill-opacity:1"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#ede6ff" rx="5.508" ry="14.704" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -4.47 31.516)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#ede6ff" rx="10.399" ry="29.851" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -39.328 7.883)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#7e14ff" rx="5.508" ry="30.487" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -25.913 -14.639)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -32.644 -3.334)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -34.34 30.47)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#ede6ff" rx="14.072" ry="22.078" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="rotate(93.35 24.506 48.493)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx=".387" cy="8.972" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(39.51 .387 8.972)"/></g><g filter="url(#k)"><ellipse cx="47.523" cy="-6.092" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 47.523 -6.092)"/></g><g filter="url(#l)"><ellipse cx="41.412" cy="6.333" fill="#47bfff" rx="5.971" ry="9.665" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 41.412 6.333)"/></g><g filter="url(#m)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#n)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#o)"><ellipse cx="35.651" cy="29.907" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 35.651 29.907)"/></g><g filter="url(#p)"><ellipse cx="38.418" cy="32.4" fill="#47bfff" rx="5.971" ry="15.297" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 38.418 32.4)"/></g></g><defs><filter id="b" width="60.045" height="41.654" x="-19.77" y="16.149" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-54.613" y="-7.533" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-49.64" y="2.03" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-45.045" y="20.029" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-43.513" y="21.178" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="15.756" y="-17.901" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-27.636" y="-22.853" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="20.116" y="-38.415" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="24.641" y="-11.323" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="8.244" y="-2.416" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="18.713" y="10.588" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter></defs></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Luxury Wine-Red Gradient -->
+    <linearGradient id="pizzacraveBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7A0C02" />
+      <stop offset="45%" stop-color="#941508" />
+      <stop offset="100%" stop-color="#BA1F10" />
+    </linearGradient>
+
+    <!-- Champagne Gold Accent Gradient -->
+    <linearGradient id="pizzacraveGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+
+    <!-- Wood-Fired Crust Gradient -->
+    <linearGradient id="crustGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="40%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#92400E" />
+    </linearGradient>
+
+    <!-- Melted Golden Mozzarella Gradient -->
+    <linearGradient id="cheeseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="25%" stop-color="#FDE047" />
+      <stop offset="75%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+
+    <!-- Pepperoni Radial Gradient with Savory Depth -->
+    <radialGradient id="pepGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#EF4444" />
+      <stop offset="55%" stop-color="#B91C1C" />
+      <stop offset="100%" stop-color="#6F1212" />
+    </radialGradient>
+
+    <!-- Basil Herb Gradient -->
+    <linearGradient id="basilGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ADE80" />
+      <stop offset="60%" stop-color="#16A34A" />
+      <stop offset="100%" stop-color="#14532D" />
+    </linearGradient>
+
+    <!-- Realistic Drop Shadows -->
+    <filter id="tileShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+    <filter id="sliceDepth" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#351B17" flood-opacity="0.55" />
+    </filter>
+    <filter id="pepDepth" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#450A0A" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- Outer Squircle with Golden Bevel -->
+  <rect x="18" y="18" width="476" height="476" rx="118" fill="url(#pizzacraveBg)" />
+  <rect x="22" y="22" width="468" height="468" rx="114" fill="none" stroke="url(#pizzacraveGold)" stroke-width="5" stroke-opacity="0.45" />
+
+  <!-- Inner Subtle Atmosphere Glow -->
+  <circle cx="256" cy="270" r="165" fill="#F59E0B" opacity="0.12" />
+
+  <!-- Artisan Pizza Slice -->
+  <g filter="url(#sliceDepth)">
+    <!-- Wood-Fired Crust Arch -->
+    <path d="M120 168 C 196 124, 316 124, 392 168 C 404 175, 406 190, 396 201 C 387 211, 372 213, 362 206 C 302 174, 210 174, 150 206 C 140 213, 125 211, 116 201 C 106 190, 108 175, 120 168 Z" fill="url(#crustGrad)" />
+
+    <!-- Crust Oven Blistering / Char Accents -->
+    <ellipse cx="204" cy="156" rx="16" ry="5" fill="#78350F" opacity="0.5" />
+    <ellipse cx="308" cy="156" rx="18" ry="6" fill="#78350F" opacity="0.45" />
+    <ellipse cx="256" cy="151" rx="12" ry="4" fill="#FEF3C7" opacity="0.65" />
+
+    <!-- Rich Melted Cheese Base Triangle -->
+    <path d="M140 196 C 210 168, 302 168, 372 196 C 378 202, 372 216, 362 228 L 268 392 C 262 402, 250 402, 244 392 L 150 228 C 140 216, 134 202, 140 196 Z" fill="url(#cheeseGrad)" />
+
+    <!-- Stretchy Cheese Drip Tip -->
+    <path d="M243 388 C 248 410, 264 410, 269 388 C 273 376, 239 376, 243 388 Z" fill="#FDE047" />
+    <circle cx="256" cy="406" r="5.5" fill="#FACC15" />
+
+    <!-- San Marzano Tomato Sauce Border line -->
+    <path d="M146 202 C 214 178, 298 178, 366 202" stroke="#941508" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0.75" />
+
+    <!-- Pepperoni Slice 1 (Upper Left) -->
+    <g filter="url(#pepDepth)">
+      <circle cx="210" cy="236" r="33" fill="url(#pepGrad)" />
+      <circle cx="203" cy="229" r="4.5" fill="#FCA5A5" opacity="0.6" />
+      <circle cx="221" cy="245" r="3.5" fill="#450A0A" opacity="0.45" />
+      <circle cx="220" cy="225" r="3" fill="#FCA5A5" opacity="0.65" />
+    </g>
+
+    <!-- Pepperoni Slice 2 (Upper Right) -->
+    <g filter="url(#pepDepth)">
+      <circle cx="308" cy="250" r="35" fill="url(#pepGrad)" />
+      <circle cx="301" cy="241" r="5" fill="#FCA5A5" opacity="0.6" />
+      <circle cx="321" cy="259" r="3.5" fill="#450A0A" opacity="0.45" />
+      <circle cx="295" cy="259" r="3" fill="#FCA5A5" opacity="0.65" />
+    </g>
+
+    <!-- Pepperoni Slice 3 (Lower Center) -->
+    <g filter="url(#pepDepth)">
+      <circle cx="256" cy="318" r="31" fill="url(#pepGrad)" />
+      <circle cx="249" cy="311" r="4.5" fill="#FCA5A5" opacity="0.6" />
+      <circle cx="267" cy="327" r="3.5" fill="#450A0A" opacity="0.45" />
+      <circle cx="252" cy="326" r="2.5" fill="#FCA5A5" opacity="0.7" />
+    </g>
+
+    <!-- Fresh Italian Basil Leaf 1 (Center) -->
+    <path d="M238 238 C 254 208, 282 215, 282 240 C 282 262, 254 262, 238 238 Z" fill="url(#basilGrad)" filter="url(#pepDepth)" />
+    <path d="M245 239 Q 263 234 276 238" stroke="#86EFAC" stroke-width="1.8" fill="none" opacity="0.8" />
+
+    <!-- Fresh Italian Basil Leaf 2 (Near Tip) -->
+    <path d="M212 292 C 223 274, 243 278, 241 294 C 239 308, 221 308, 212 292 Z" fill="url(#basilGrad)" filter="url(#pepDepth)" />
+
+    <!-- Golden Herb / Oregano Flecks -->
+    <circle cx="236" cy="282" r="2.8" fill="#15803D" />
+    <circle cx="280" cy="290" r="2.8" fill="#15803D" />
+    <circle cx="182" cy="216" r="2.2" fill="#15803D" />
+    <circle cx="336" cy="220" r="2.2" fill="#15803D" />
+    <circle cx="273" cy="362" r="2.2" fill="#15803D" />
+    <circle cx="234" cy="342" r="2.2" fill="#15803D" />
+  </g>
+
+  <!-- Premium Fresh-from-Oven Glint Sparkle (Top-Right) -->
+  <path d="M386 86 Q 386 114 414 114 Q 386 114 386 142 Q 386 114 358 114 Q 386 114 386 86 Z" fill="url(#pizzacraveGold)" />
+  <circle cx="386" cy="114" r="4.5" fill="#FFFFFF" />
+
+  <!-- Secondary Delicate Sparkle (Bottom-Left) -->
+  <path d="M106 394 Q 106 410 122 410 Q 106 410 106 426 Q 106 410 90 410 Q 106 410 106 394 Z" fill="url(#pizzacraveGold)" opacity="0.8" />
+</svg>

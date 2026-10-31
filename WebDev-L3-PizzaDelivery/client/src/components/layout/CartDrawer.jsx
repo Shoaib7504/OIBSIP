@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, CheckCircle2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useCart } from "../../context/CartContext";
+import { useOrderInventory } from "../../context/OrderInventoryContext";
 import { Button } from "../common/Button";
 
 export const CartDrawer = () => {
+  const navigate = useNavigate();
   const {
     isCartOpen,
     setIsCartOpen,
@@ -18,9 +21,12 @@ export const CartDrawer = () => {
     tax,
     total,
     totalItemsCount,
+    showToast,
   } = useCart();
 
+  const { placeOrder } = useOrderInventory();
   const [isOrdered, setIsOrdered] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState(null);
 
   // Close on Escape key
   useEffect(() => {
@@ -36,6 +42,10 @@ export const CartDrawer = () => {
   }, [isCartOpen]);
 
   const handleCheckout = () => {
+    // Place order into the OrderInventory system (auto-decrements stock)
+    const newOrder = placeOrder(cartItems, subtotal, deliveryFee, tax, total);
+    setLastOrderId(newOrder.id);
+
     confetti({
       particleCount: 100,
       spread: 70,
@@ -141,12 +151,28 @@ export const CartDrawer = () => {
                     <h3 className="text-2xl font-black text-[#941508] mb-2">
                       Order Confirmed!
                     </h3>
+                    {lastOrderId && (
+                      <p className="text-sm font-bold text-[#351B17] bg-[#FFF0B8] px-4 py-1.5 rounded-full border border-[#E8D595] mb-3">
+                        {lastOrderId}
+                      </p>
+                    )}
                     <p className="text-sm text-[#7A5C55] leading-relaxed mb-6">
                       Our chefs are already tossing your dough! Your hot & fresh pizza will arrive at your door in approx. 28 minutes.
                     </p>
-                    <Button onClick={handleClose} variant="primary">
-                      Back to Menu
-                    </Button>
+                    <div className="flex flex-col gap-2 w-full max-w-xs">
+                      <Button
+                        onClick={() => {
+                          handleClose();
+                          navigate("/dashboard");
+                        }}
+                        variant="primary"
+                      >
+                        Track My Order
+                      </Button>
+                      <Button onClick={handleClose} variant="outline">
+                        Back to Menu
+                      </Button>
+                    </div>
                   </motion.div>
                 ) : cartItems.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center p-6">

@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, ShoppingBag, Menu, X, Pizza } from "lucide-react";
+import {
+  Search,
+  ShoppingBag,
+  Menu,
+  X,
+  Pizza,
+  LayoutDashboard,
+  ShieldCheck,
+  User,
+  LogIn,
+} from "lucide-react";
 import { useCart } from "../../context/CartContext";
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { totalItemsCount, setIsCartOpen, setIsSearchOpen } = useCart();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isHome = location.pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,13 +31,28 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Home", href: "#hero" },
-    { name: "Menu", href: "#menu" },
-    { name: "Deals", href: "#deals" },
-    { name: "Customize", href: "#customize" },
-    { name: "About Us", href: "#about" },
-    { name: "Contact", href: "#footer" },
+  // Landing page section links
+  const sectionLinks = [
+    { name: "Home", href: "/#hero" },
+    { name: "Menu", href: "/#menu" },
+    { name: "Deals", href: "/#deals" },
+    { name: "Customize", href: "/#customize" },
+    { name: "About Us", href: "/#about" },
+    { name: "Contact", href: "/#footer" },
+  ];
+
+  // Route view links
+  const navRoutes = [
+    {
+      name: "My Orders",
+      path: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Admin",
+      path: "/admin",
+      icon: ShieldCheck,
+    },
   ];
 
   return (
@@ -39,9 +69,9 @@ export const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <a
-              href="#hero"
+            {/* Brand Logo */}
+            <Link
+              to="/"
               className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-xl p-1"
               aria-label="PizzaCrave Homepage"
             >
@@ -56,20 +86,68 @@ export const Navbar = () => {
                   Artisan Pizzeria
                 </span>
               </div>
-            </a>
+            </Link>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-7 lg:gap-9" aria-label="Main Navigation">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-sm font-semibold text-[#351B17] hover:text-[#941508] transition-colors relative py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-lg px-2 group"
+            <nav className="hidden md:flex items-center gap-1 lg:gap-2" aria-label="Main Navigation">
+              {/* Section links */}
+              {isHome ? (
+                sectionLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href.replace("/", "")}
+                    className="text-sm font-semibold text-[#351B17] hover:text-[#941508] transition-colors relative py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-lg px-2.5 group"
+                  >
+                    {link.name}
+                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#941508] scale-x-0 transition-transform duration-300 group-hover:scale-x-100 rounded-full" />
+                  </a>
+                ))
+              ) : (
+                <Link
+                  to="/"
+                  className="text-xs font-bold text-[#941508] hover:text-[#C92719] px-3 py-1.5 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] hover:bg-[#FFF0B8]/50"
                 >
-                  {link.name}
-                  <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#941508] scale-x-0 transition-transform duration-300 group-hover:scale-x-100 rounded-full" />
-                </a>
-              ))}
+                  ← Back to Menu
+                </Link>
+              )}
+
+              {/* Separator */}
+              <div className="w-px h-5 bg-[#351B17]/15 mx-1" aria-hidden="true" />
+
+              {/* Dashboard & Admin Routes */}
+              {navRoutes.map((route) => {
+                const Icon = route.icon;
+                const isActive = location.pathname === route.path;
+                return (
+                  <Link
+                    key={route.path}
+                    to={route.path}
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] min-h-[36px] ${
+                      isActive
+                        ? "bg-[#941508] text-white shadow-xs"
+                        : "text-[#351B17] hover:bg-[#FFF0B8] border border-transparent hover:border-[#E8D595]"
+                    }`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <Icon size={14} aria-hidden="true" />
+                    {route.name}
+                  </Link>
+                );
+              })}
+
+              {/* Sign In / Account Link */}
+              <Link
+                to="/login"
+                className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] min-h-[36px] ${
+                  location.pathname === "/login" || location.pathname === "/register"
+                    ? "bg-[#941508] text-white shadow-xs"
+                    : "text-[#941508] bg-[#FFF0B8]/60 hover:bg-[#FFF0B8] border border-[#E8D595]"
+                }`}
+                aria-current={location.pathname === "/login" ? "page" : undefined}
+              >
+                <User size={14} aria-hidden="true" />
+                <span>Sign In</span>
+              </Link>
             </nav>
 
             {/* Right Action Icons */}
@@ -131,16 +209,70 @@ export const Navbar = () => {
             className="fixed top-[60px] sm:top-[68px] left-0 right-0 z-30 bg-[#FFFDF7] border-b border-[#941508]/15 shadow-xl px-6 py-6 md:hidden overflow-hidden"
           >
             <nav className="flex flex-col gap-2" aria-label="Mobile Navigation">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
+              {/* Section links */}
+              {isHome ? (
+                sectionLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href.replace("/", "")}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-base font-bold text-[#351B17] hover:text-[#941508] py-2.5 px-3 rounded-xl hover:bg-[#FFF0B8]/40 transition-colors"
+                  >
+                    {link.name}
+                  </a>
+                ))
+              ) : (
+                <Link
+                  to="/"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-base font-bold text-[#351B17] hover:text-[#941508] py-2.5 px-3 rounded-xl hover:bg-[#FFF0B8]/40 transition-colors"
+                  className="text-base font-bold text-[#941508] py-2.5 px-3 rounded-xl hover:bg-[#FFF0B8]/40 transition-colors"
                 >
-                  {link.name}
-                </a>
-              ))}
+                  ← Back to Menu
+                </Link>
+              )}
+
+              {/* Divider */}
+              <div className="h-px bg-[#351B17]/10 my-2" aria-hidden="true" />
+
+              {/* Route links */}
+              {navRoutes.map((route) => {
+                const Icon = route.icon;
+                const isActive = location.pathname === route.path;
+                return (
+                  <Link
+                    key={route.path}
+                    to={route.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-2.5 text-base font-bold py-2.5 px-3 rounded-xl transition-colors text-left ${
+                      isActive
+                        ? "bg-[#941508] text-white"
+                        : "text-[#351B17] hover:text-[#941508] hover:bg-[#FFF0B8]/40"
+                    }`}
+                  >
+                    <Icon size={18} aria-hidden="true" />
+                    {route.name}
+                  </Link>
+                );
+              })}
+
+              {/* Sign In & Register links in mobile */}
+              <div className="pt-2 border-t border-[#351B17]/10 flex flex-col gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-[#941508] text-white shadow-xs"
+                >
+                  <LogIn size={16} />
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl font-bold text-xs text-[#941508] bg-[#FFF0B8] border border-[#E8D595]"
+                >
+                  Create New Account
+                </Link>
+              </div>
             </nav>
           </motion.div>
         )}
