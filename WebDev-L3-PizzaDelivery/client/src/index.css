@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pizza-primary: #941508;
+  --color-pizza-secondary: #C92719;
+  --color-pizza-accent: #F49A13;
+  --color-pizza-bg: #FFFDF7;
+  --color-pizza-card: #FFF0B8;
+  --color-pizza-card-border: #E8D595;
+  --color-pizza-dark: #351B17;
+  --color-pizza-muted: #7A5C55;
+
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #FFFDF7;
+  color: #351B17;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Diagonal lines background used in hero */
+.bg-diagonal-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(148, 21, 8, 0.03) 0,
+    rgba(148, 21, 8, 0.03) 2px,
+    transparent 0,
+    transparent 28px
+  );
+}
+
+/* Subtle food doodle background */
+.bg-doodle-pattern {
+  background-color: #FFFDF7;
+  background-image: radial-gradient(rgba(148, 21, 8, 0.06) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Smooth custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFFDF7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E0C79B;
+  border-radius: 9999px;
+  border: 2px solid #FFFDF7;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #941508;
+}

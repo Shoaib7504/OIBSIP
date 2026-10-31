@@ -1,0 +1,79 @@
+<svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Motion speed lines -->
+  <line x1="10" y1="130" x2="45" y2="130" stroke="#F49A13" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 4" opacity="0.8"/>
+  <line x1="20" y1="145" x2="60" y2="145" stroke="#941508" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="8 5" opacity="0.6"/>
+  <line x1="15" y1="160" x2="50" y2="160" stroke="#F49A13" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.7"/>
+
+  <!-- Location Pin Floating -->
+  <g transform="translate(105, 10)">
+    <path d="M20 0C8.954 0 0 8.954 0 20C0 35 20 48 20 48C20 48 40 35 40 20C40 8.954 31.046 0 20 0Z" fill="#C92719"/>
+    <circle cx="20" cy="18" r="7" fill="white"/>
+    <circle cx="20" cy="18" r="4" fill="#941508"/>
+  </g>
+
+  <!-- Delivery Box (on back rack) -->
+  <rect x="75" y="80" width="46" height="42" rx="4" fill="#F49A13" stroke="#B86F00" stroke-width="2"/>
+  <!-- Box handle/strap -->
+  <line x1="75" y1="98" x2="121" y2="98" stroke="#B86F00" stroke-width="2"/>
+  <path d="M92 80 L92 74 C92 72 104 72 104 74 L104 80" stroke="#7A4200" stroke-width="2" fill="none"/>
+  <!-- Pizza icon on box -->
+  <circle cx="98" cy="114" r="8" fill="#FFFDF7"/>
+  <path d="M98 114 L104 108 A8 8 0 0 0 92 108 Z" fill="#C92719"/>
+
+  <!-- Rider Body -->
+  <!-- Back & Spine -->
+  <path d="M125 110 C120 95 130 75 145 75 C155 75 160 85 160 100 L155 125 Z" fill="#C92719"/>
+  <!-- Arm reaching handlebars -->
+  <path d="M142 85 L168 100 L178 98" stroke="#F2A882" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M142 85 L160 95" stroke="#941508" stroke-width="8" stroke-linecap="round"/>
+  <!-- Leg -->
+  <path d="M148 118 L162 135 L175 135" stroke="#2B2D42" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Shoe -->
+  <rect x="170" y="132" width="14" height="7" rx="3" fill="#1A1A1A"/>
+
+  <!-- Head / Helmet -->
+  <circle cx="150" cy="56" r="16" fill="#FFFDF7" stroke="#941508" stroke-width="3"/>
+  <path d="M150 40 C141 40 134 47 134 56 C134 60 136 63 138 66 L162 66 C164 63 166 60 166 56 C166 47 159 40 150 40 Z" fill="#941508"/>
+  <!-- Visor -->
+  <path d="M152 54 L165 54 C167 54 168 56 167 58 L165 62 L150 62 Z" fill="#351B17"/>
+
+  <!-- Scooter Body -->
+  <!-- Floorboard / Chassis -->
+  <path d="M110 135 L175 135 L185 115 L200 115" stroke="#941508" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M100 132 C100 125 115 120 135 120 L155 120" stroke="#C92719" stroke-width="8" stroke-linecap="round"/>
+  <!-- Front Apron / Shield -->
+  <path d="M185 132 L198 90 C199 87 202 85 205 85 L208 85" stroke="#C92719" stroke-width="8" stroke-linecap="round"/>
+  <!-- Headlight -->
+  <ellipse cx="206" cy="85" rx="5" ry="4" fill="#FFE885" stroke="#F49A13" stroke-width="1.5"/>
+  <path d="M211 82 L225 78 L225 92 L211 88 Z" fill="#FFE885" opacity="0.3"/>
+  <!-- Handlebars -->
+  <line x1="188" y1="80" x2="202" y2="82" stroke="#2B2D42" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="187" cy="80" r="3" fill="#351B17"/>
+
+  <!-- Rear Wheel -->
+  <g transform="translate(90, 145)">
+    <circle cx="0" cy="0" r="22" fill="#2B2D42"/>
+    <circle cx="0" cy="0" r="14" fill="#D6D6D6"/>
+    <circle cx="0" cy="0" r="6" fill="#941508"/>
+    <!-- Spokes -->
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="#9E9E9E" stroke-width="2"/>
+  </g>
+  <!-- Rear Mudguard -->
+  <path d="M68 145 A22 22 0 0 1 112 145" stroke="#C92719" stroke-width="5" fill="none"/>
+
+  <!-- Front Wheel -->
+  <g transform="translate(205, 145)">
+    <circle cx="0" cy="0" r="22" fill="#2B2D42"/>
+    <circle cx="0" cy="0" r="14" fill="#D6D6D6"/>
+    <circle cx="0" cy="0" r="6" fill="#941508"/>
+    <!-- Spokes -->
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#9E9E9E" stroke-width="2"/>
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="#9E9E9E" stroke-width="2"/>
+  </g>
+  <!-- Front Mudguard -->
+  <path d="M183 145 A22 22 0 0 1 227 145" stroke="#C92719" stroke-width="5" fill="none"/>
+
+  <!-- Ground shadow -->
+  <ellipse cx="148" cy="172" rx="75" ry="6" fill="#351B17" opacity="0.12"/>
+</svg>

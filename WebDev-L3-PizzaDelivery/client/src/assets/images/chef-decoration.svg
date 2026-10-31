@@ -1,0 +1,34 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Gold Ring -->
+  <circle cx="60" cy="60" r="56" fill="#FFFDF7" stroke="#F49A13" stroke-width="3"/>
+  <circle cx="60" cy="60" r="50" fill="#FFF0B8" stroke="#E8D595" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <!-- Chef Hat -->
+  <path d="M42 48 C36 48 32 42 34 35 C35 28 42 26 48 28 C52 22 68 22 72 28 C78 26 85 28 86 35 C88 42 84 48 78 48 Z" fill="white" stroke="#941508" stroke-width="2"/>
+  <rect x="42" y="47" width="36" height="8" rx="2" fill="white" stroke="#941508" stroke-width="2"/>
+  <line x1="50" y1="36" x2="50" y2="44" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="60" y1="33" x2="60" y2="44" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="70" y1="36" x2="70" y2="44" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Chef Face -->
+  <ellipse cx="60" cy="65" rx="16" ry="14" fill="#FBD3B4"/>
+
+  <!-- Chef Mustache -->
+  <path d="M60 67 C54 62 44 65 43 71 C49 71 55 69 60 70 C65 69 71 71 77 71 C76 65 66 62 60 67 Z" fill="#351B17"/>
+
+  <!-- Eyes & Nose -->
+  <circle cx="53" cy="61" r="2" fill="#351B17"/>
+  <circle cx="67" cy="61" r="2" fill="#351B17"/>
+  <ellipse cx="60" cy="64" rx="3" ry="2.5" fill="#F2A882"/>
+
+  <!-- Smile underneath -->
+  <path d="M56 73 Q60 76 64 73" stroke="#941508" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Red Neckerchief -->
+  <path d="M46 76 L74 76 L65 88 L60 84 L55 88 Z" fill="#C92719" stroke="#941508" stroke-width="1.5"/>
+  <circle cx="60" cy="79" r="3" fill="#F49A13"/>
+
+  <!-- Star accents -->
+  <path d="M22 60 L24 55 L29 55 L25 58 L27 63 L22 60 Z" fill="#F49A13"/>
+  <path d="M98 60 L96 55 L91 55 L95 58 L93 63 L98 60 Z" fill="#F49A13"/>
+</svg>
