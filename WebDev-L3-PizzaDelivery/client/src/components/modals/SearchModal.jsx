@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, X, Plus, Star } from "lucide-react";
+import { Search, X, Plus } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { regularFlavours, customerFavorites } from "../../data/pizzasData";
 import { VegBadge } from "../common/Badge";
@@ -8,6 +8,19 @@ import { VegBadge } from "../common/Badge";
 export const SearchModal = () => {
   const { isSearchOpen, setIsSearchOpen, addToCart, setActivePizzaModal } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsSearchOpen(false);
+      }
+    };
+    if (isSearchOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSearchOpen, setIsSearchOpen]);
 
   const allPizzas = useMemo(() => {
     return [...customerFavorites, ...regularFlavours];
@@ -27,7 +40,12 @@ export const SearchModal = () => {
   return (
     <AnimatePresence>
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search Menu"
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -35,6 +53,7 @@ export const SearchModal = () => {
             exit={{ opacity: 0 }}
             onClick={() => setIsSearchOpen(false)}
             className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            aria-hidden="true"
           />
 
           <div className="min-h-screen px-4 text-center flex items-start justify-center pt-20 pb-6">
@@ -47,21 +66,26 @@ export const SearchModal = () => {
             >
               {/* Search Bar Input */}
               <div className="p-4 border-b border-[#941508]/10 flex items-center gap-3 bg-white">
-                <Search size={22} className="text-[#941508] shrink-0" />
+                <Search size={22} className="text-[#941508] shrink-0" aria-hidden="true" />
+                <label htmlFor="search-pizza-input" className="sr-only">
+                  Search Pizzas
+                </label>
                 <input
+                  id="search-pizza-input"
                   type="text"
                   placeholder="Search for Margherita, Pepperoni, Veggie, BBQ..."
                   autoFocus
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-transparent text-base font-medium text-[#351B17] placeholder-[#7A5C55]/60 focus:outline-none"
+                  className="w-full bg-transparent text-base font-medium text-[#351B17] placeholder-[#7A5C55]/60 focus:outline-none min-h-[44px]"
                 />
                 <button
                   type="button"
                   onClick={() => setIsSearchOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 text-gray-500"
+                  className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 text-gray-500 min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508]"
+                  aria-label="Close search"
                 >
-                  <X size={18} />
+                  <X size={20} aria-hidden="true" />
                 </button>
               </div>
 
@@ -82,16 +106,19 @@ export const SearchModal = () => {
                       key={pizza.id}
                       className="flex items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-black/5 hover:border-[#941508]/30 hover:shadow-xs transition-all group"
                     >
-                      <div
-                        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                      <button
+                        type="button"
+                        className="flex items-center gap-3 flex-1 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-xl p-1"
                         onClick={() => {
                           setIsSearchOpen(false);
                           setActivePizzaModal(pizza);
                         }}
+                        aria-label={`View details for ${pizza.name}`}
                       >
                         <img
                           src={pizza.image}
-                          alt={pizza.name}
+                          alt=""
+                          aria-hidden="true"
                           className="w-14 h-14 rounded-xl object-cover shrink-0 group-hover:scale-105 transition-transform"
                         />
                         <div className="min-w-0">
@@ -108,15 +135,16 @@ export const SearchModal = () => {
                             ${pizza.price.toFixed(2)}
                           </span>
                         </div>
-                      </div>
+                      </button>
 
                       <button
                         type="button"
                         onClick={() => addToCart(pizza)}
-                        className="w-9 h-9 rounded-full bg-[#FFF0B8] hover:bg-[#941508] text-[#941508] hover:text-white transition-colors flex items-center justify-center shrink-0 shadow-xs"
+                        className="w-10 h-10 rounded-full bg-[#FFF0B8] hover:bg-[#941508] text-[#941508] hover:text-white transition-colors flex items-center justify-center shrink-0 shadow-2xs min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508]"
+                        aria-label={`Add ${pizza.name} to cart`}
                         title="Add to cart"
                       >
-                        <Plus size={18} />
+                        <Plus size={18} aria-hidden="true" />
                       </button>
                     </div>
                   ))
@@ -129,4 +157,3 @@ export const SearchModal = () => {
     </AnimatePresence>
   );
 };
-

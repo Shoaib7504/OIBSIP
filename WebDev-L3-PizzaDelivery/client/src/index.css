@@ -2,6 +2,7 @@
 
 @theme {
   --color-pizza-primary: #941508;
+  --color-pizza-primary-hover: #7d1106;
   --color-pizza-secondary: #C92719;
   --color-pizza-accent: #F49A13;
   --color-pizza-bg: #FFFDF7;
@@ -9,6 +10,7 @@
   --color-pizza-card-border: #E8D595;
   --color-pizza-dark: #351B17;
   --color-pizza-muted: #7A5C55;
+  --color-pizza-card-text: #4A261F;
 
   --font-heading: 'Poppins', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -32,8 +34,8 @@ h1, h2, h3, h4, h5, h6 {
 .bg-diagonal-lines {
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(148, 21, 8, 0.03) 0,
-    rgba(148, 21, 8, 0.03) 2px,
+    rgba(148, 21, 8, 0.035) 0,
+    rgba(148, 21, 8, 0.035) 2px,
     transparent 0,
     transparent 28px
   );
@@ -42,8 +44,14 @@ h1, h2, h3, h4, h5, h6 {
 /* Subtle food doodle background */
 .bg-doodle-pattern {
   background-color: #FFFDF7;
-  background-image: radial-gradient(rgba(148, 21, 8, 0.06) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(148, 21, 8, 0.07) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
+}
+
+/* Universal high-contrast focus rings for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #941508;
+  outline-offset: 2px;
 }
 
 /* Smooth custom scrollbar */
@@ -65,3 +73,14 @@ h1, h2, h3, h4, h5, h6 {
   background: #941508;
 }
 
+/* Accessibility: Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

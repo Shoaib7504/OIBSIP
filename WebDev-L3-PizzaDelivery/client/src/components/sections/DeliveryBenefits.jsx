@@ -1,11 +1,13 @@
 import React from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { Zap, ShieldCheck, MapPin, ArrowRight } from "lucide-react";
 import { SectionHeader } from "../common/SectionHeader";
 import { Button } from "../common/Button";
-import deliveryRiderSvg from "../../assets/images/delivery-rider.svg";
+import deliverManSvg from "../../assets/images/deliver_man (1).svg";
 
 export const DeliveryBenefits = () => {
+  const shouldReduceMotion = useReducedMotion();
+
   const benefits = [
     {
       icon: Zap,
@@ -25,7 +27,7 @@ export const DeliveryBenefits = () => {
   ];
 
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden bg-[#FFF0B8]/40 border-y border-[#E8D595]/60">
+    <section className="py-16 md:py-24 relative overflow-hidden bg-[#FFF0B8]/40 border-y border-[#E8D595]/60" aria-labelledby="delivery-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           title="From Our Oven to Your Door in 30 Minutes!"
@@ -34,7 +36,7 @@ export const DeliveryBenefits = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mt-12">
           {/* Left: 3 Checkpoint Benefits (Col 4) */}
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 space-y-4">
             {benefits.map((b, idx) => {
               const Icon = b.icon;
               return (
@@ -44,9 +46,9 @@ export const DeliveryBenefits = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.5, delay: idx * 0.15 }}
-                  className="flex items-start gap-3.5 p-4 bg-white/90 rounded-2xl border border-[#941508]/10 shadow-xs"
+                  className="flex items-start gap-3.5 p-4 bg-white/95 rounded-2xl border border-[#941508]/10 shadow-2xs"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#941508] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#941508] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5" aria-hidden="true">
                     <Icon size={20} />
                   </div>
                   <div>
@@ -66,17 +68,17 @@ export const DeliveryBenefits = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.7, type: "spring" }}
-            className="lg:col-span-5 flex items-center justify-center p-4"
+            className="lg:col-span-5 flex items-center justify-center p-2 sm:p-4"
           >
             <motion.div
-              animate={{ x: [-6, 6, -6], y: [-2, 2, -2] }}
+              animate={shouldReduceMotion ? {} : { x: [-4, 4, -4], y: [-2, 2, -2] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="w-full max-w-sm sm:max-w-md drop-shadow-xl"
+              className="w-full max-w-sm sm:max-w-md flex items-center justify-center"
             >
               <img
-                src={deliveryRiderSvg}
-                alt="Express pizza delivery scooter rider"
-                className="w-full h-auto select-none pointer-events-none"
+                src={deliverManSvg}
+                alt="Express pizza delivery rider on a motor scooter"
+                className="w-full max-h-[320px] sm:max-h-[380px] object-contain drop-shadow-2xl select-none pointer-events-none"
               />
             </motion.div>
           </motion.div>
@@ -98,15 +100,16 @@ export const DeliveryBenefits = () => {
             <p className="text-xs text-[#7A5C55] leading-relaxed">
               Equipped with smart heating bags maintaining 165°F optimal heat so the crust stays crunch-perfect.
             </p>
-            <a href="#menu" className="block pt-2">
-              <Button variant="primary" size="md" className="w-full" icon={ArrowRight}>
-                Order Now
-              </Button>
-            </a>
+            <div className="pt-2">
+              <a href="#menu" tabIndex={-1}>
+                <Button variant="primary" size="md" className="w-full" icon={ArrowRight}>
+                  Order Now
+                </Button>
+              </a>
+            </div>
           </motion.div>
         </div>
       </div>
     </section>
   );
 };
-

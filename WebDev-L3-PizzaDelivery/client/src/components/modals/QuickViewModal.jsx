@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Star, ShoppingBag, Plus, Minus, Check } from "lucide-react";
+import { X, ShoppingBag, Plus, Minus, Check } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { Button } from "../common/Button";
 import { VegBadge } from "../common/Badge";
@@ -11,6 +11,19 @@ export const QuickViewModal = () => {
   const [selectedSize, setSelectedSize] = useState("Medium");
   const [quantity, setQuantity] = useState(1);
   const [extraCheese, setExtraCheese] = useState(false);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setActivePizzaModal(null);
+      }
+    };
+    if (activePizzaModal) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activePizzaModal, setActivePizzaModal]);
 
   useEffect(() => {
     if (activePizzaModal) {
@@ -47,13 +60,19 @@ export const QuickViewModal = () => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div
+        className="fixed inset-0 z-50 overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quickview-title"
+      >
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setActivePizzaModal(null)}
           className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+          aria-hidden="true"
         />
 
         <div className="min-h-screen px-4 text-center flex items-center justify-center p-4">
@@ -65,7 +84,7 @@ export const QuickViewModal = () => {
           >
             {/* Image Column */}
             <div className="relative bg-[#FFF0B8]/40 p-8 flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-doodle-pattern opacity-40 pointer-events-none" />
+              <div className="absolute inset-0 bg-doodle-pattern opacity-40 pointer-events-none" aria-hidden="true" />
               <motion.img
                 initial={{ rotate: -15, scale: 0.8 }}
                 animate={{ rotate: 0, scale: 1 }}
@@ -83,15 +102,16 @@ export const QuickViewModal = () => {
             <div className="p-6 md:p-8 flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-xl md:text-2xl font-black text-[#351B17]">
+                  <h2 id="quickview-title" className="text-xl md:text-2xl font-black text-[#351B17]">
                     {pizza.name}
-                  </h3>
+                  </h2>
                   <button
                     type="button"
                     onClick={() => setActivePizzaModal(null)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 text-[#7A5C55]"
+                    className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 text-[#7A5C55] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] min-h-[44px] min-w-[44px]"
+                    aria-label="Close pizza details"
                   >
-                    <X size={20} />
+                    <X size={20} aria-hidden="true" />
                   </button>
                 </div>
 
@@ -99,7 +119,7 @@ export const QuickViewModal = () => {
                   <RatingStars rating={pizza.rating || 4.8} reviews={pizza.reviews || 95} />
                 </div>
 
-                <p className="text-xs text-[#7A5C55] mt-3 leading-relaxed">
+                <p className="text-xs text-[#4A261F] font-medium mt-3 leading-relaxed">
                   {pizza.description}
                 </p>
 
@@ -114,11 +134,12 @@ export const QuickViewModal = () => {
                         key={size}
                         type="button"
                         onClick={() => setSelectedSize(size)}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] ${
                           selectedSize === size
-                            ? "bg-[#941508] text-white border-[#941508] shadow-sm"
+                            ? "bg-[#941508] text-white border-[#941508] shadow-xs"
                             : "bg-white text-[#351B17] border-black/10 hover:border-[#941508]/40"
                         }`}
+                        aria-pressed={selectedSize === size}
                       >
                         {size}
                       </button>
@@ -128,42 +149,48 @@ export const QuickViewModal = () => {
 
                 {/* Extra Topping Checkbox */}
                 <div className="mt-4">
-                  <label
+                  <button
+                    type="button"
                     onClick={() => setExtraCheese(!extraCheese)}
-                    className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-black/10 hover:border-[#941508]/30 cursor-pointer select-none"
+                    className="w-full flex items-center gap-2.5 p-3 rounded-xl bg-white border border-black/10 hover:border-[#941508]/30 cursor-pointer select-none text-left min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508]"
+                    role="checkbox"
+                    aria-checked={extraCheese}
                   >
                     <div
                       className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
                         extraCheese ? "bg-[#941508] text-white" : "border border-gray-300 bg-gray-50"
                       }`}
+                      aria-hidden="true"
                     >
                       {extraCheese && <Check size={14} />}
                     </div>
-                    <span className="text-xs font-medium text-[#351B17] flex-1">
+                    <span className="text-xs font-semibold text-[#351B17] flex-1">
                       Double Gooey Mozzarella
                     </span>
                     <span className="text-xs font-bold text-[#941508]">+$1.50</span>
-                  </label>
+                  </button>
                 </div>
               </div>
 
               {/* Bottom Actions */}
               <div className="pt-6 mt-6 border-t border-[#941508]/10 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2 border border-black/10 rounded-full px-2.5 py-1 bg-white">
+                <div className="flex items-center gap-2 border border-black/10 rounded-full px-2.5 py-1 bg-white min-h-[44px]">
                   <button
                     type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-6 h-6 flex items-center justify-center text-[#7A5C55] hover:text-[#941508]"
+                    className="w-8 h-8 flex items-center justify-center text-[#7A5C55] hover:text-[#941508] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#941508] rounded-full"
+                    aria-label="Decrease quantity"
                   >
-                    <Minus size={14} />
+                    <Minus size={14} aria-hidden="true" />
                   </button>
-                  <span className="text-sm font-bold w-5 text-center">{quantity}</span>
+                  <span className="text-sm font-bold w-6 text-center">{quantity}</span>
                   <button
                     type="button"
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-6 h-6 flex items-center justify-center text-[#7A5C55] hover:text-[#941508]"
+                    className="w-8 h-8 flex items-center justify-center text-[#7A5C55] hover:text-[#941508] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#941508] rounded-full"
+                    aria-label="Increase quantity"
                   >
-                    <Plus size={14} />
+                    <Plus size={14} aria-hidden="true" />
                   </button>
                 </div>
 
@@ -183,4 +210,3 @@ export const QuickViewModal = () => {
     </AnimatePresence>
   );
 };
-

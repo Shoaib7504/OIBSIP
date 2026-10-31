@@ -1,14 +1,13 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Heart, Award, Sparkles, ArrowRight } from "lucide-react";
-import { SectionHeader } from "../common/SectionHeader";
 import { Button } from "../common/Button";
 import { PIZZA_IMAGES } from "../../data/pizzasData";
 import chefBadge from "../../assets/images/chef-decoration.svg";
 
 export const AboutUs = () => {
   return (
-    <section id="about" className="py-16 md:py-24 relative overflow-hidden bg-[#FFFDF7]">
+    <section id="about" className="py-16 md:py-24 relative overflow-hidden bg-[#FFFDF7]" aria-labelledby="about-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Text Column (Col 7) */}
@@ -19,12 +18,15 @@ export const AboutUs = () => {
             transition={{ duration: 0.7 }}
             className="lg:col-span-7 space-y-6"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FFF0B8] border border-[#E8D595] text-[#941508] text-xs font-bold">
-              <Heart size={14} className="fill-[#941508]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFF0B8] border border-[#E8D595] text-[#941508] text-xs font-bold">
+              <Heart size={14} className="fill-[#941508]" aria-hidden="true" />
               <span>Authentic Italian Passion</span>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#351B17] tracking-tight leading-tight">
+            <h2
+              id="about-heading"
+              className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#351B17] tracking-tight leading-tight"
+            >
               Made with Love, <br className="hidden sm:inline" />
               <span className="text-[#941508]">Delivered with Care!</span>
             </h2>
@@ -42,25 +44,27 @@ export const AboutUs = () => {
             </div>
 
             {/* Feature Bullets */}
-            <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#FFF0B8] flex items-center justify-center text-[#941508]">
-                  <Award size={16} />
+                <div className="w-9 h-9 rounded-full bg-[#FFF0B8] flex items-center justify-center text-[#941508] shrink-0">
+                  <Award size={18} aria-hidden="true" />
                 </div>
                 <span className="text-xs font-bold text-[#351B17]">Master Pizzaiolo Certified</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#FFF0B8] flex items-center justify-center text-[#941508]">
-                  <Sparkles size={16} />
+                <div className="w-9 h-9 rounded-full bg-[#FFF0B8] flex items-center justify-center text-[#941508] shrink-0">
+                  <Sparkles size={18} aria-hidden="true" />
                 </div>
                 <span className="text-xs font-bold text-[#351B17]">48h Slow-Fermented Dough</span>
               </div>
             </div>
 
             <div className="pt-4">
-              <Button variant="primary" size="lg" icon={ArrowRight}>
-                Learn More About Our Story
-              </Button>
+              <a href="#menu" tabIndex={-1}>
+                <Button variant="primary" size="lg" icon={ArrowRight}>
+                  Explore Our Pizzas
+                </Button>
+              </a>
             </div>
           </motion.div>
 
@@ -78,10 +82,10 @@ export const AboutUs = () => {
               <div className="w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner border-2 border-white/20 relative group">
                 <img
                   src={PIZZA_IMAGES.storyPizza}
-                  alt="Artisan pizza on wooden board"
+                  alt="Artisan wood-fired pizza presented on a rustic wooden peel board"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" aria-hidden="true" />
                 <span className="absolute bottom-4 left-4 text-xs font-bold text-white bg-black/40 backdrop-blur-xs px-3 py-1 rounded-full border border-white/20">
                   Oven-Fresh Hearth Baked
                 </span>
@@ -93,11 +97,12 @@ export const AboutUs = () => {
               animate={{ y: [-5, 5, -5] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -bottom-6 -right-4 sm:-bottom-8 sm:-right-6 w-24 h-24 sm:w-28 sm:h-28 z-20 drop-shadow-2xl"
+              aria-hidden="true"
             >
               <img
                 src={chefBadge}
-                alt="Head chef approval badge"
-                className="w-full h-full object-contain"
+                alt=""
+                className="w-full h-full object-contain pointer-events-none"
               />
             </motion.div>
           </motion.div>
@@ -106,4 +111,3 @@ export const AboutUs = () => {
     </section>
   );
 };
-
