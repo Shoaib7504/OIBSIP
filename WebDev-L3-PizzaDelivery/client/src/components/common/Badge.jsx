@@ -37,3 +37,4 @@ export const PromoBadge = ({ text, variant = "orange", className = "" }) => {
     </span>
   );
 };
+

@@ -129,3 +129,4 @@ export const SearchModal = () => {
     </AnimatePresence>
   );
 };
+

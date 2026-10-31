@@ -106,3 +106,4 @@ export const AboutUs = () => {
     </section>
   );
 };
+

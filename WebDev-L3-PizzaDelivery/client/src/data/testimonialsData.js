@@ -34,3 +34,4 @@ export const testimonials = [
     text: "Ordered for our Friday team party. Every single box was hot, fresh, and perfectly cut. The Pepperoni Classic was the biggest hit!",
   },
 ];
+

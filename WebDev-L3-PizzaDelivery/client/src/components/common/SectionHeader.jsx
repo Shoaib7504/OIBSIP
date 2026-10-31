@@ -37,3 +37,4 @@ export const SectionHeader = ({
     </motion.div>
   );
 };
+

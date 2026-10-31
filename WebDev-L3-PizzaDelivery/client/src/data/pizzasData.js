@@ -171,3 +171,4 @@ export const heroMiniCards = [
     image: PIZZA_IMAGES.bbqChicken,
   },
 ];
+

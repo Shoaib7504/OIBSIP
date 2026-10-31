@@ -28,3 +28,4 @@ export const RatingStars = ({ rating = 4.8, reviews = null, size = 15, showNumbe
     </div>
   );
 };
+
