@@ -13,7 +13,7 @@ const STORAGE_KEYS = {
   inventory: "pizzacrave_inventory",
 };
 
-// ─── BroadcastChannel Name ──────────────────────────────────────────────────
+// ─── BroadcastChannel Name 
 const SYNC_CHANNEL = "pizzacrave_sync";
 
 // ─── Initial Inventory Seed Data ────────────────────────────────────────────

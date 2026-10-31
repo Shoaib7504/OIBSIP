@@ -11,14 +11,15 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Sparkles,
-  CheckCircle2,
 } from "lucide-react";
 import { Button } from "../../components/common/Button";
 import { useCart } from "../../context/CartContext";
 import ingredientPattern from "../../assets/images/ingredient-pattern.svg";
 import { registerUser } from "../../services/authServices";
+import { useAuth } from "../../context/AuthContext";
+
 export const Register = () => {
+  const { setAuth } = useAuth();
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { showToast } = useCart();
@@ -44,37 +45,38 @@ export const Register = () => {
   const passwordValue = watch("password");
 
   const onSubmit = async (data) => {
+    console.log("Register Form Data:", data);
     try {
       const userData = {
         name: data.fullName.trim(),
         email: data.email.trim().toLowerCase(),
         password: data.password,
         phone: data.phone?.trim() || "",
-      }
+      };
 
-      const response = await registerUser(userData)
-    
+      const response = await registerUser(userData);
+
       if (!response.success || !response.token) {
-        throw new Error(response.message || "Register failed")
+        throw new Error(response.message || "Registration failed");
       }
 
-      //save authencation data
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      // Save authentication data
+      setAuth(response.data, response.token);
 
       showToast(
-        "Account create successfully! Welcome to PizzaCrave.",
+        "Account created successfully! Welcome to PizzaCrave.",
         "success"
-      )
+      );
       navigate(
         response.data.role === "admin" ? "/admin" : "/dashboard",
         { replace: true }
       );
     } catch (error) {
+      console.error("Register error:", error);
       const message =
         error.response?.data?.message ||
         error.message ||
-        "Something went wrong. Please try again.";
+        "Something went wrong. Please check if the server is running.";
 
       showToast(message, "error");
     }
@@ -156,10 +158,11 @@ export const Register = () => {
                     message: "Name must be at least 2 characters",
                   },
                 })}
-                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.fullName
-                  ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                  : "border-gray-200 focus:ring-[#941508]"
-                  }`}
+                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                  errors.fullName
+                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                    : "border-gray-200 focus:ring-[#941508]"
+                }`}
                 aria-invalid={errors.fullName ? "true" : "false"}
                 aria-describedby={errors.fullName ? "register-name-error" : undefined}
               />
@@ -197,10 +200,11 @@ export const Register = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email
-                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                    : "border-gray-200 focus:ring-[#941508]"
-                    }`}
+                  className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                    errors.email
+                      ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                      : "border-gray-200 focus:ring-[#941508]"
+                  }`}
                   aria-invalid={errors.email ? "true" : "false"}
                   aria-describedby={errors.email ? "register-email-error" : undefined}
                 />
@@ -235,10 +239,11 @@ export const Register = () => {
                       message: "Invalid phone number format",
                     },
                   })}
-                  className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.phone
-                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                    : "border-gray-200 focus:ring-[#941508]"
-                    }`}
+                  className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                    errors.phone
+                      ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                      : "border-gray-200 focus:ring-[#941508]"
+                  }`}
                   aria-invalid={errors.phone ? "true" : "false"}
                   aria-describedby={errors.phone ? "register-phone-error" : undefined}
                 />
@@ -277,10 +282,11 @@ export const Register = () => {
                       message: "Min. 6 characters",
                     },
                   })}
-                  className={`w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.password
-                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                    : "border-gray-200 focus:ring-[#941508]"
-                    }`}
+                  className={`w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                    errors.password
+                      ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                      : "border-gray-200 focus:ring-[#941508]"
+                  }`}
                   aria-invalid={errors.password ? "true" : "false"}
                   aria-describedby={errors.password ? "register-password-error" : undefined}
                 />
@@ -322,10 +328,11 @@ export const Register = () => {
                     validate: (value) =>
                       value === passwordValue || "Passwords do not match",
                   })}
-                  className={`w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.confirmPassword
-                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                    : "border-gray-200 focus:ring-[#941508]"
-                    }`}
+                  className={`w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                    errors.confirmPassword
+                      ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                      : "border-gray-200 focus:ring-[#941508]"
+                  }`}
                   aria-invalid={errors.confirmPassword ? "true" : "false"}
                   aria-describedby={errors.confirmPassword ? "register-confirm-error" : undefined}
                 />
@@ -407,4 +414,3 @@ export const Register = () => {
     </div>
   );
 };
-

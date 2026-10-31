@@ -25,6 +25,7 @@ import { Login } from "./pages/auth/Login";
 import { Register } from "./pages/auth/Register";
 import { UserDashboard } from "./components/dashboard/UserDashboard";
 import { AdminDashboard } from "./components/dashboard/AdminDashboard";
+import { AuthProvider } from "./context/AuthContext";
 
 /**
  * Scroll to top on route transition
@@ -64,11 +65,10 @@ function FloatingRouteSwitcher() {
           <Link
             key={link.path}
             to={link.path}
-            className={`px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
-              isActive
+            className={`px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer ${isActive
                 ? "bg-[#941508] text-white shadow-2xs"
                 : "text-[#351B17] hover:bg-[#FFF0B8]/60"
-            }`}
+              }`}
           >
             {link.label}
           </Link>
@@ -117,13 +117,15 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <CartProvider>
-        <OrderInventoryProvider>
-          <AppContent />
-        </OrderInventoryProvider>
-      </CartProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <CartProvider>
+          <OrderInventoryProvider>
+            <AppContent />
+          </OrderInventoryProvider>
+        </CartProvider>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

@@ -10,15 +10,15 @@ import {
   EyeOff,
   ArrowRight,
   Sparkles,
-  ShieldCheck,
-  UserCheck,
 } from "lucide-react";
 import { Button } from "../../components/common/Button";
 import { useCart } from "../../context/CartContext";
 import ingredientPattern from "../../assets/images/ingredient-pattern.svg";
 import { loginUser } from "../../services/authServices";
+import { useAuth } from "../../context/AuthContext";
 
 export const Login = () => {
+  const { setAuth } = useAuth();
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { showToast } = useCart();
@@ -37,42 +37,49 @@ export const Login = () => {
     },
   });
 
+  const handleQuickFill = (role) => {
+    if (role === "admin") {
+      setValue("email", "admin@pizzacrave.com");
+      setValue("password", "Admin@123456");
+    } else {
+      setValue("email", "customer@pizzacrave.com");
+      setValue("password", "Customer@123456");
+    }
+  };
+
   const onSubmit = async (data) => {
+    console.log("Login Form Data:", data);
     try {
       const credentials = {
         email: data.email.trim().toLowerCase(),
         password: data.password,
-      }
-      const response = await loginUser(credentials)
+      };
+      const response = await loginUser(credentials);
       if (!response.success || !response.token || !response.data) {
-        throw new Error(response.message || "Login failed")
+        throw new Error(response.message || "Login failed");
       }
-      //save authentication infromation
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.data))
+      // Save authentication information
+      setAuth(response.data, response.token);
 
-      //Show toasted message
-      showToast("Logged in successfully! Welcome back.", "Success")
+      // Show toast message
+      showToast("Logged in successfully! Welcome back.", "success");
 
-      //Redirect based on actual role
-
+      // Redirect based on actual role
       if (response.data.role === "admin") {
-        navigate('/admin', { replace: true })
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
       }
-      else (
-        navigate('/dashboard', { replace: true })
-      )
     } catch (error) {
+      console.error("Login error:", error);
       const message =
         error.response?.data?.message ||
         error.message ||
-        "Login failed. Please try again.";
+        "Login failed. Please verify credentials or check if the server is running.";
 
       showToast(message, "error");
     }
   };
-
-
 
   return (
     <div
@@ -174,10 +181,11 @@ export const Login = () => {
                     message: "Please enter a valid email address",
                   },
                 })}
-                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email
-                  ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                  : "border-gray-200 focus:ring-[#941508]"
-                  }`}
+                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                  errors.email
+                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                    : "border-gray-200 focus:ring-[#941508]"
+                }`}
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "login-email-error" : undefined}
               />
@@ -225,10 +233,11 @@ export const Login = () => {
                     message: "Password must be at least 6 characters",
                   },
                 })}
-                className={`w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.password
-                  ? "border-red-500 focus:ring-red-400 bg-red-50/20"
-                  : "border-gray-200 focus:ring-[#941508]"
-                  }`}
+                className={`w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                  errors.password
+                    ? "border-red-500 focus:ring-red-400 bg-red-50/20"
+                    : "border-gray-200 focus:ring-[#941508]"
+                }`}
                 aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "login-password-error" : undefined}
               />
@@ -292,4 +301,3 @@ export const Login = () => {
     </div>
   );
 };
-
