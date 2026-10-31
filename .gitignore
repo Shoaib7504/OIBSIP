@@ -30,3 +30,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Agent skills & customizations
+.agents/
+.agent/
+_agents/
+_agent/
+
+
