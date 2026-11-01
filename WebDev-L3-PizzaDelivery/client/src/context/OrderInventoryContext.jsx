@@ -6,17 +6,24 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import {
+  getAllOrders as fetchBackendOrders,
+  getMyOrders as fetchMyBackendOrders,
+  createOrder as createBackendOrderApi,
+  updateOrderStatus as updateBackendOrderStatusApi,
+} from "../services/orderServices";
 
-// Storage Keys 
+import { useAuth } from "./AuthContext";
+// Storage Keys
 const STORAGE_KEYS = {
   orders: "pizzacrave_orders",
   inventory: "pizzacrave_inventory",
 };
 
-// BroadcastChannel Name 
+// BroadcastChannel Name
 const SYNC_CHANNEL = "pizzacrave_sync";
 
-// Initial Inventory Seed Data 
+// Initial Inventory Seed Data
 const INITIAL_INVENTORY = [
   // Pizza Bases
   { id: "base-1", category: "Pizza Bases", name: "Sourdough Regular", stock: 120, threshold: 20, unit: "units" },
@@ -42,71 +49,98 @@ const INITIAL_INVENTORY = [
   { id: "veg-6", category: "Vegetables", name: "Pepperoni", stock: 65, threshold: 18, unit: "kg" },
 ];
 
-// ─── Helper: Generate a random 5-digit order ID ────────────────────────────
-function generateOrderId() {
-  const digits = Math.floor(10000 + Math.random() * 90000);
-  return `ORD-${digits}`;
-}
+/**
+ * Status Mapping Helpers
+ */
+export const backendStatusToUiStatus = (status) => {
+  const map = {
+    placed: "received",
+    received: "received",
+    pending: "received",
+    preparing: "in_kitchen",
+    in_kitchen: "in_kitchen",
+    "out for delivery": "sent_to_delivery",
+    out_for_delivery: "sent_to_delivery",
+    sent_to_delivery: "sent_to_delivery",
+    delivered: "delivered",
+    cancelled: "cancelled",
+  };
+  return map[String(status).toLowerCase()] || "received";
+};
 
-// ─── Seed Demo Orders ───────────────────────────────────────────────────────
-function createSeedOrders() {
-  const now = new Date();
-  const thirtyMinsFromNow = new Date(now.getTime() + 30 * 60 * 1000);
-  const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-  const ninetyMinsAgo = new Date(now.getTime() - 90 * 60 * 1000);
+export const uiStatusToBackendStatus = (status) => {
+  const map = {
+    received: "Placed",
+    in_kitchen: "Preparing",
+    sent_to_delivery: "Out for Delivery",
+    delivered: "Delivered",
+    cancelled: "Cancelled",
+  };
+  return map[status] || "Placed";
+};
 
-  return [
-    {
-      id: "ORD-10042",
-      items: [
-        { name: "Margherita Classica", size: "Large", quantity: 1, price: 16.99, image: "/pizzas/margherita.webp" },
-        { name: "Pepperoni Supremo", size: "Medium", quantity: 2, price: 14.99, image: "/pizzas/pepperoni.webp" },
-      ],
-      status: "in_kitchen",
-      statusHistory: [
-        { status: "received", timestamp: new Date(now.getTime() - 15 * 60 * 1000).toISOString() },
-        { status: "in_kitchen", timestamp: new Date(now.getTime() - 8 * 60 * 1000).toISOString() },
-      ],
-      subtotal: 46.97,
-      deliveryFee: 3.99,
-      tax: 4.08,
-      total: 55.04,
-      customerName: "You",
-      deliveryAddress: "123 Main Street, Apt 4B",
-      createdAt: new Date(now.getTime() - 15 * 60 * 1000).toISOString(),
-      estimatedDelivery: new Date(now.getTime() + 15 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "ORD-10037",
-      items: [
-        { name: "Quattro Formaggi", size: "Large", quantity: 1, price: 18.99, image: "/pizzas/quattro.webp" },
-      ],
-      status: "delivered",
-      statusHistory: [
-        { status: "received", timestamp: twoHoursAgo.toISOString() },
-        { status: "in_kitchen", timestamp: new Date(twoHoursAgo.getTime() + 10 * 60 * 1000).toISOString() },
-        { status: "sent_to_delivery", timestamp: ninetyMinsAgo.toISOString() },
-        { status: "delivered", timestamp: new Date(ninetyMinsAgo.getTime() + 25 * 60 * 1000).toISOString() },
-      ],
-      subtotal: 18.99,
-      deliveryFee: 3.99,
-      tax: 1.84,
-      total: 24.82,
-      customerName: "You",
-      deliveryAddress: "123 Main Street, Apt 4B",
-      createdAt: twoHoursAgo.toISOString(),
-      estimatedDelivery: new Date(twoHoursAgo.getTime() + 30 * 60 * 1000).toISOString(),
-    },
-  ];
-}
+/**
+ * Normalizes backend MongoDB orders to fit the client UI schema seamlessly
+ */
+export const normalizeBackendOrder = (order) => {
+  if (!order) return null;
+  const id = order._id || order.id;
+  const uiStatus = backendStatusToUiStatus(order.status);
+  const now = new Date(order.createdAt || Date.now());
 
-// ─── localStorage Helpers ───────────────────────────────────────────────────
+  const deliveryAddress = order.customer?.address
+    ? `${order.customer.address.street}, ${order.customer.address.city} ${order.customer.address.postalCode || ""
+      }`.trim()
+    : order.deliveryAddress || "Standard Delivery";
+
+  return {
+    ...order,
+    id,
+    _id: id,
+    customerName: order.customer?.name || order.customerName || "Customer",
+    customerEmail: order.customer?.email || order.customerEmail || "",
+    customerPhone: order.customer?.phone || order.customerPhone || "",
+    deliveryAddress,
+    total: typeof order.totalAmount === "number" ? order.totalAmount : order.total || 0,
+    subtotal:
+      order.subtotal ||
+      (typeof order.totalAmount === "number"
+        ? Number((order.totalAmount * 0.85).toFixed(2))
+        : 0),
+    deliveryFee: order.deliveryFee ?? 0,
+    tax: order.tax ?? 0,
+    status: uiStatus,
+    rawStatus: order.status,
+    paymentMethod: order.paymentMethod || "COD",
+    paymentStatus: order.paymentStatus || "Pending",
+    items: (order.items || []).map((item) => ({
+      name: item.name,
+      size: item.size
+        ? item.size.charAt(0).toUpperCase() + item.size.slice(1)
+        : "Medium",
+      quantity: item.quantity || 1,
+      price: item.price || 0,
+      image: item.image || item.pizza?.image || "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800",
+    })),
+    statusHistory: order.statusHistory || [
+      { status: "received", timestamp: order.createdAt || now.toISOString() },
+      ...(uiStatus !== "received"
+        ? [{ status: uiStatus, timestamp: order.updatedAt || new Date().toISOString() }]
+        : []),
+    ],
+    createdAt: order.createdAt || now.toISOString(),
+    estimatedDelivery:
+      order.estimatedDelivery ||
+      new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
+  };
+};
+
+//  localStorage Helpers 
 function loadFromStorage(key, fallback) {
   try {
     const stored = localStorage.getItem(key);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Validate that parsed data is an array and non-empty
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
@@ -125,26 +159,19 @@ function saveToStorage(key, data) {
   }
 }
 
-// ─── Context ────────────────────────────────────────────────────────────────
+//  Context 
 const OrderInventoryContext = createContext(null);
 
-/**
- * OrderInventoryProvider
- *
- * Central state management for orders and inventory.
- * Persists to localStorage and syncs across tabs via BroadcastChannel.
- */
 export function OrderInventoryProvider({ children }) {
-  // ── State ───────────────────────────────────────────────────────────────
-  const [orders, setOrders] = useState(() =>
-    loadFromStorage(STORAGE_KEYS.orders, createSeedOrders)
-  );
 
+  const { user } = useAuth()
+  const [orders, setOrders] = useState(() => loadFromStorage(STORAGE_KEYS.orders, []));
   const [inventory, setInventory] = useState(() =>
     loadFromStorage(STORAGE_KEYS.inventory, INITIAL_INVENTORY)
   );
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  // ── Persist to localStorage on state change ─────────────────────────────
+  //  Persist to localStorage 
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.orders, orders);
   }, [orders]);
@@ -153,53 +180,37 @@ export function OrderInventoryProvider({ children }) {
     saveToStorage(STORAGE_KEYS.inventory, inventory);
   }, [inventory]);
 
-  // ── Cross-Tab Sync via BroadcastChannel ─────────────────────────────────
+  //  Cross-Tab Sync via BroadcastChannel 
   useEffect(() => {
-    // BroadcastChannel may not be available in all environments
     if (typeof BroadcastChannel === "undefined") return;
 
-    const channel = new BroadcastChannel(SYNC_CHANNEL);
-
-    channel.onmessage = (event) => {
-      const { type, payload } = event.data || {};
-
-      switch (type) {
-        case "NEW_ORDER":
-          // Merge a new order (avoid duplicates)
+    let channel;
+    try {
+      channel = new BroadcastChannel(SYNC_CHANNEL);
+      channel.onmessage = (event) => {
+        const { type, payload } = event.data || {};
+        if (type === "ORDER_UPDATE") {
+          setOrders((prev) =>
+            prev.map((ord) => (ord.id === payload.id ? { ...ord, ...payload } : ord))
+          );
+        } else if (type === "NEW_ORDER") {
           setOrders((prev) => {
-            const exists = prev.some((o) => o.id === payload.id);
-            if (exists) return prev;
+            if (prev.some((o) => o.id === payload.id)) return prev;
             return [payload, ...prev];
           });
-          break;
-
-        case "ORDER_UPDATE":
-          // Replace the updated order in state
-          setOrders((prev) =>
-            prev.map((o) => (o.id === payload.id ? payload : o))
-          );
-          break;
-
-        case "INVENTORY_UPDATE":
-          // Full inventory replacement from another tab
-          if (Array.isArray(payload)) {
-            setInventory(payload);
-          }
-          break;
-
-        default:
-          break;
-      }
-    };
+        } else if (type === "INVENTORY_UPDATE") {
+          setInventory(payload);
+        }
+      };
+    } catch (err) {
+      console.warn("[PizzaCrave] BroadcastChannel listener failed:", err);
+    }
 
     return () => {
-      channel.close();
+      if (channel) channel.close();
     };
   }, []);
 
-  /**
-   * Broadcast a sync message to other tabs.
-   */
   const broadcast = useCallback((type, payload) => {
     try {
       if (typeof BroadcastChannel === "undefined") return;
@@ -211,174 +222,148 @@ export function OrderInventoryProvider({ children }) {
     }
   }, []);
 
-  // ── Order Actions ───────────────────────────────────────────────────────
+  // Sync with Backend Orders 
+  const refreshOrders = useCallback(async () => {
+    if (!user) {
+      setOrders([]);
+      return;
+    }
 
-  /**
-   * Place a new order.
-   * Creates the order object, auto-decrements inventory, and broadcasts.
-   *
-   * @param {Array} cartItems - Items in the cart [{ name, size, quantity, price, image }]
-   * @param {number} subtotal
-   * @param {number} deliveryFee
-   * @param {number} tax
-   * @param {number} total
-   * @returns {Object} The newly created order
-   */
-  const placeOrder = useCallback(
-    (cartItems, subtotal, deliveryFee, tax, total) => {
-      const now = new Date();
-      const newOrder = {
-        id: generateOrderId(),
-        items: cartItems.map((item) => ({
-          name: item.name,
-          size: item.size,
-          quantity: item.quantity,
-          price: item.price,
-          image: item.image,
-        })),
-        status: "received",
-        statusHistory: [
-          { status: "received", timestamp: now.toISOString() },
-        ],
-        subtotal,
-        deliveryFee,
-        tax,
-        total,
-        customerName: "You",
-        deliveryAddress: "123 Main Street, Apt 4B",
-        createdAt: now.toISOString(),
-        estimatedDelivery: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
-      };
+    try {
+      setIsSyncing(true);
 
-      // Auto-decrement inventory: 1 base, 0.5L sauce, 0.3kg cheese per pizza item
-      const totalPizzaQty = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const res =
+        user.role === "admin"
+          ? await fetchBackendOrders()
+          : await fetchMyBackendOrders();
 
-      setInventory((prev) => {
-        const updated = prev.map((item) => {
-          // Decrement the first available item in each category proportionally
-          if (item.category === "Pizza Bases" && item.id === "base-1") {
-            return { ...item, stock: Math.max(0, item.stock - totalPizzaQty) };
-          }
-          if (item.category === "Sauces" && item.id === "sauce-1") {
-            return { ...item, stock: Math.max(0, item.stock - totalPizzaQty * 0.5) };
-          }
-          if (item.category === "Cheeses" && item.id === "cheese-1") {
-            return { ...item, stock: Math.max(0, item.stock - totalPizzaQty * 0.3) };
-          }
-          return item;
+      if (res?.success && Array.isArray(res.data)) {
+        const normalized = res.data.map(normalizeBackendOrder);
+        setOrders(normalized);
+      }
+    } catch (err) {
+      console.warn(
+        "[PizzaCrave] Backend orders sync failed:",
+        err.message
+      );
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [user?._id, user?.role]);
+  // Initial load and periodic polling every 6 seconds for real-time order tracking
+  useEffect(() => {
+    refreshOrders();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshOrders();
+      }
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [refreshOrders]);
+
+  //  Order Creation (Direct to Backend) 
+  const placeBackendOrder = useCallback(
+    async (orderPayload) => {
+      try {
+        const res = await createBackendOrderApi(orderPayload);
+        if (!res?.success || !res?.data) {
+          throw new Error(res?.message || "Failed to create order on server");
+        }
+
+        const newOrder = normalizeBackendOrder(res.data);
+
+        // Update local state
+        setOrders((prev) => [newOrder, ...prev]);
+
+        // Auto-decrement inventory in UI
+        const totalPizzaQty = (orderPayload.items || []).reduce(
+          (sum, item) => sum + (item.quantity || 1),
+          0
+        );
+
+        setInventory((prev) => {
+          const updated = prev.map((item) => {
+            if (item.category === "Pizza Bases" && item.id === "base-1") {
+              return { ...item, stock: Math.max(0, item.stock - totalPizzaQty) };
+            }
+            if (item.category === "Sauces" && item.id === "sauce-1") {
+              return { ...item, stock: Math.max(0, item.stock - totalPizzaQty * 0.5) };
+            }
+            if (item.category === "Cheeses" && item.id === "cheese-1") {
+              return { ...item, stock: Math.max(0, item.stock - totalPizzaQty * 0.3) };
+            }
+            return item;
+          });
+
+          broadcast("INVENTORY_UPDATE", updated);
+          return updated;
         });
 
-        // Broadcast inventory update to other tabs
-        broadcast("INVENTORY_UPDATE", updated);
-        return updated;
-      });
-
-      // Add order to state
-      setOrders((prev) => [newOrder, ...prev]);
-
-      // Broadcast new order to other tabs
-      broadcast("NEW_ORDER", newOrder);
-
-      return newOrder;
+        broadcast("NEW_ORDER", newOrder);
+        return newOrder;
+      } catch (err) {
+        console.error("[PizzaCrave] placeBackendOrder error:", err);
+        throw err;
+      }
     },
     [broadcast]
   );
 
-  /**
-   * Advance an order's status and push to its statusHistory.
-   *
-   * @param {string} orderId
-   * @param {string} newStatus - "received" | "in_kitchen" | "sent_to_delivery" | "delivered"
-   */
+  //  Update Order Status (Admin to Backend) 
   const updateOrderStatus = useCallback(
-    (orderId, newStatus) => {
+    async (orderId, newUiStatus) => {
+      const backendStatus = uiStatusToBackendStatus(newUiStatus);
+
+      // Optimistic update in UI
       setOrders((prev) => {
         const updated = prev.map((order) => {
-          if (order.id !== orderId) return order;
+          if (order.id !== orderId && order._id !== orderId) return order;
 
           const updatedOrder = {
             ...order,
-            status: newStatus,
+            status: newUiStatus,
+            rawStatus: backendStatus,
             statusHistory: [
-              ...order.statusHistory,
-              { status: newStatus, timestamp: new Date().toISOString() },
+              ...(order.statusHistory || []),
+              { status: newUiStatus, timestamp: new Date().toISOString() },
             ],
           };
 
-          // Broadcast the update to other tabs
           broadcast("ORDER_UPDATE", updatedOrder);
           return updatedOrder;
         });
-
         return updated;
       });
+
+      // Send update to Backend API if it's a valid MongoDB ID
+      try {
+        if (orderId && orderId.length === 24) {
+          await updateBackendOrderStatusApi(orderId, backendStatus);
+        }
+      } catch (err) {
+        console.error(`[PizzaCrave] Failed to update order ${orderId} on backend:`, err);
+        refreshOrders(); // Re-sync on error
+      }
     },
-    [broadcast]
+    [broadcast, refreshOrders]
   );
 
-  /**
-   * Cancel an order by setting its status to "cancelled".
-   *
-   * @param {string} orderId
-   */
   const cancelOrder = useCallback(
     (orderId) => {
-      setOrders((prev) => {
-        const updated = prev.map((order) => {
-          if (order.id !== orderId) return order;
-
-          const cancelledOrder = {
-            ...order,
-            status: "cancelled",
-            statusHistory: [
-              ...order.statusHistory,
-              { status: "cancelled", timestamp: new Date().toISOString() },
-            ],
-          };
-
-          broadcast("ORDER_UPDATE", cancelledOrder);
-          return cancelledOrder;
-        });
-
-        return updated;
-      });
+      return updateOrderStatus(orderId, "cancelled");
     },
-    [broadcast]
+    [updateOrderStatus]
   );
 
-  // ── Inventory Actions ───────────────────────────────────────────────────
-
-  /**
-   * Manually set the stock level for an inventory item.
-   *
-   * @param {string} itemId
-   * @param {number} newStock
-   */
+  //  Manual Inventory Controls 
   const updateStock = useCallback(
     (itemId, newStock) => {
       setInventory((prev) => {
         const updated = prev.map((item) =>
-          item.id === itemId ? { ...item, stock: Math.max(0, newStock) } : item
-        );
-        broadcast("INVENTORY_UPDATE", updated);
-        return updated;
-      });
-    },
-    [broadcast]
-  );
-
-  /**
-   * Update the low-stock threshold for an inventory item.
-   *
-   * @param {string} itemId
-   * @param {number} newThreshold
-   */
-  const updateThreshold = useCallback(
-    (itemId, newThreshold) => {
-      setInventory((prev) => {
-        const updated = prev.map((item) =>
           item.id === itemId
-            ? { ...item, threshold: Math.max(0, newThreshold) }
+            ? { ...item, stock: Math.max(0, Math.round(newStock * 10) / 10) }
             : item
         );
         broadcast("INVENTORY_UPDATE", updated);
@@ -388,12 +373,6 @@ export function OrderInventoryProvider({ children }) {
     [broadcast]
   );
 
-  /**
-   * Add stock to an inventory item (restock).
-   *
-   * @param {string} itemId
-   * @param {number} addAmount - Amount to add to current stock
-   */
   const restockItem = useCallback(
     (itemId, addAmount) => {
       setInventory((prev) => {
@@ -409,23 +388,40 @@ export function OrderInventoryProvider({ children }) {
     [broadcast]
   );
 
-  // ── Derived / Query Helpers ─────────────────────────────────────────────
+  const resetInventoryItem = useCallback(
+    (itemId) => {
+      const initial = INITIAL_INVENTORY.find((i) => i.id === itemId);
+      if (!initial) return;
+      setInventory((prev) => {
+        const updated = prev.map((item) =>
+          item.id === itemId ? { ...item, stock: initial.stock } : item
+        );
+        broadcast("INVENTORY_UPDATE", updated);
+        return updated;
+      });
+    },
+    [broadcast]
+  );
 
-  /**
-   * Get all inventory items where stock is at or below the threshold.
-   *
-   * @returns {Array} Low-stock inventory items
-   */
+  const updateThreshold = useCallback(
+    (itemId, newThreshold) => {
+      setInventory((prev) => {
+        const updated = prev.map((item) =>
+          item.id === itemId
+            ? { ...item, threshold: Math.max(1, Math.round(newThreshold)) }
+            : item
+        );
+        broadcast("INVENTORY_UPDATE", updated);
+        return updated;
+      });
+    },
+    [broadcast]
+  );
+
   const getLowStockItems = useCallback(() => {
     return inventory.filter((item) => item.stock <= item.threshold);
   }, [inventory]);
 
-  /**
-   * Filter orders by a specific status.
-   *
-   * @param {string} status
-   * @returns {Array} Matching orders
-   */
   const getOrdersByStatus = useCallback(
     (status) => {
       return orders.filter((order) => order.status === status);
@@ -433,65 +429,61 @@ export function OrderInventoryProvider({ children }) {
     [orders]
   );
 
-  // ── Memoized Context Value ──────────────────────────────────────────────
-  const contextValue = useMemo(
+  const lowStockItems = useMemo(
+    () => inventory.filter((item) => item.stock <= item.threshold),
+    [inventory]
+  );
+
+  const value = useMemo(
     () => ({
-      // State
       orders,
       inventory,
-
-      // Order actions
-      placeOrder,
+      lowStockItems,
+      isSyncing,
+      refreshOrders,
+      placeOrder: placeBackendOrder,
+      placeBackendOrder,
       updateOrderStatus,
       cancelOrder,
-
-      // Inventory actions
       updateStock,
-      updateThreshold,
+      updateInventoryStock: updateStock,
       restockItem,
-
-      // Query helpers
+      resetInventoryItem,
+      updateThreshold,
       getLowStockItems,
       getOrdersByStatus,
     }),
     [
       orders,
       inventory,
-      placeOrder,
+      lowStockItems,
+      isSyncing,
+      refreshOrders,
+      placeBackendOrder,
       updateOrderStatus,
       cancelOrder,
       updateStock,
-      updateThreshold,
       restockItem,
+      resetInventoryItem,
+      updateThreshold,
       getLowStockItems,
       getOrdersByStatus,
     ]
   );
 
   return (
-    <OrderInventoryContext.Provider value={contextValue}>
+    <OrderInventoryContext.Provider value={value}>
       {children}
     </OrderInventoryContext.Provider>
   );
 }
 
-/**
- * useOrderInventory
- *
- * Custom hook to consume the OrderInventory context.
- * Throws if used outside of <OrderInventoryProvider>.
- */
 export function useOrderInventory() {
   const context = useContext(OrderInventoryContext);
-
   if (!context) {
     throw new Error(
-      "useOrderInventory must be used within an <OrderInventoryProvider>. " +
-        "Wrap your component tree with <OrderInventoryProvider>."
+      "useOrderInventory must be used within an OrderInventoryProvider"
     );
   }
-
   return context;
 }
-
-export default OrderInventoryContext;

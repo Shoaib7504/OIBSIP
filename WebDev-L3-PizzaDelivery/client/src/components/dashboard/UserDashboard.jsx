@@ -20,12 +20,14 @@ import {
   RotateCcw,
   XCircle,
   CalendarDays,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "../common/Button";
 import { SectionHeader } from "../common/SectionHeader";
 import { useOrderInventory } from "../../context/OrderInventoryContext";
+import { useAuth } from "../../context/AuthContext";
 
-// ─── Status helpers ──────────────────────────────────────────────
+//  Status helpers 
 const ORDER_STAGES = [
   {
     key: "received",
@@ -86,13 +88,13 @@ const formatCurrency = (v) =>
 const formatDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "—";
 
-// ─── Stat Card ───────────────────────────────────────────────────
+//  Stat Card 
 const StatCard = ({ icon: Icon, label, value, color, shouldReduceMotion }) => (
   <motion.div
     initial={shouldReduceMotion ? {} : { opacity: 0, y: 16 }}
@@ -115,7 +117,7 @@ const StatCard = ({ icon: Icon, label, value, color, shouldReduceMotion }) => (
   </motion.div>
 );
 
-// ─── Stepper Stage ───────────────────────────────────────────────
+//  Stepper Stage 
 const StepperStage = ({ stage, index, currentIdx, shouldReduceMotion }) => {
   const isCompleted = index < currentIdx;
   const isActive = index === currentIdx;
@@ -162,16 +164,14 @@ const StepperStage = ({ stage, index, currentIdx, shouldReduceMotion }) => {
       </div>
 
       <span
-        className={`mt-2 text-xs font-semibold leading-tight ${
-          isUpcoming ? "text-gray-400" : "text-[#351B17]"
-        }`}
+        className={`mt-2 text-xs font-semibold leading-tight ${isUpcoming ? "text-gray-400" : "text-[#351B17]"
+          }`}
       >
         {stage.label}
       </span>
       <span
-        className={`mt-0.5 text-[11px] leading-tight max-w-[110px] ${
-          isUpcoming ? "text-gray-300" : "text-[#7A5C55]"
-        }`}
+        className={`mt-0.5 text-[11px] leading-tight max-w-[110px] ${isUpcoming ? "text-gray-300" : "text-[#7A5C55]"
+          }`}
       >
         {stage.description}
       </span>
@@ -179,12 +179,11 @@ const StepperStage = ({ stage, index, currentIdx, shouldReduceMotion }) => {
   );
 };
 
-// ─── Connecting Line ─────────────────────────────────────────────
+//  Connecting Line 
 const ConnectingLine = ({ completed }) => (
   <div
-    className={`hidden md:block flex-1 h-0.5 mx-1 self-[center_22px] mt-5 ${
-      completed ? "bg-[#941508]" : "border-t-2 border-dashed border-gray-300 bg-transparent"
-    }`}
+    className={`hidden md:block flex-1 h-0.5 mx-1 self-[center_22px] mt-5 ${completed ? "bg-[#941508]" : "border-t-2 border-dashed border-gray-300 bg-transparent"
+      }`}
     aria-hidden="true"
   />
 );
@@ -192,14 +191,13 @@ const ConnectingLine = ({ completed }) => (
 // Vertical connecting line for mobile
 const VerticalConnectingLine = ({ completed }) => (
   <div
-    className={`md:hidden w-0.5 h-6 mx-auto ${
-      completed ? "bg-[#941508]" : "border-l-2 border-dashed border-gray-300 bg-transparent"
-    }`}
+    className={`md:hidden w-0.5 h-6 mx-auto ${completed ? "bg-[#941508]" : "border-l-2 border-dashed border-gray-300 bg-transparent"
+      }`}
     aria-hidden="true"
   />
 );
 
-// ─── Active Order Tracker Card ───────────────────────────────────
+// Active Order Tracker Card 
 const ActiveOrderTracker = ({ order, shouldReduceMotion }) => {
   const [itemsExpanded, setItemsExpanded] = useState(false);
   const currentIdx = statusToStageIndex(order.status);
@@ -208,6 +206,10 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion }) => {
 
   // Estimate ETA: ~30 min total from order, subtract elapsed
   const etaMinutes = Math.max(1, 30 - minsAgo);
+
+  const displayId = String(order.id || order._id).startsWith("ORD-")
+    ? order.id
+    : `ORD-${String(order.id || order._id).slice(-6).toUpperCase()}`;
 
   return (
     <motion.article
@@ -221,7 +223,7 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion }) => {
       <div className="px-5 pt-5 pb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-base font-bold text-[#351B17] font-['Poppins',sans-serif]">
-            ORD-{String(order.id).slice(-5).padStart(5, "0")}
+            {displayId}
           </h3>
           <p className="text-xs text-[#7A5C55] flex items-center gap-1 mt-0.5">
             <Clock size={12} aria-hidden="true" />
@@ -387,12 +389,16 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion }) => {
   );
 };
 
-// ─── Order History Card ──────────────────────────────────────────
+//  Order History Card 
 const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
   const isDelivered =
     order.status?.toLowerCase() === "delivered" ||
     order.status?.toLowerCase() === "completed";
   const isCancelled = order.status?.toLowerCase() === "cancelled";
+
+  const displayId = String(order.id || order._id).startsWith("ORD-")
+    ? order.id
+    : `ORD-${String(order.id || order._id).slice(-6).toUpperCase()}`;
 
   return (
     <motion.div
@@ -404,9 +410,8 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
-          className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${
-            isCancelled ? "bg-red-50" : "bg-emerald-50"
-          }`}
+          className={`flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0 ${isCancelled ? "bg-red-50" : "bg-emerald-50"
+            }`}
         >
           {isCancelled ? (
             <XCircle size={18} className="text-red-500" aria-hidden="true" />
@@ -416,7 +421,7 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
         </div>
         <div className="min-w-0">
           <p className="text-sm font-bold text-[#351B17] font-['Poppins',sans-serif]">
-            ORD-{String(order.id).slice(-5).padStart(5, "0")}
+            {displayId}
           </p>
           <p className="text-[11px] text-[#7A5C55] flex items-center gap-1">
             <CalendarDays size={11} aria-hidden="true" />
@@ -433,11 +438,10 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
           {formatCurrency(order.total)}
         </span>
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-            isCancelled
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${isCancelled
               ? "bg-red-50 text-red-600 border border-red-200"
               : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-          }`}
+            }`}
         >
           {isCancelled ? "Cancelled" : "Delivered"}
         </span>
@@ -458,7 +462,7 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
   );
 };
 
-// ─── Empty State ─────────────────────────────────────────────────
+// Empty State 
 const EmptyState = ({ shouldReduceMotion }) => (
   <motion.div
     initial={shouldReduceMotion ? {} : { opacity: 0, scale: 0.95 }}
@@ -490,20 +494,22 @@ const EmptyState = ({ shouldReduceMotion }) => (
   </motion.div>
 );
 
-// ═══════════════════════════════════════════════════════════════════
 // Main Component
-// ═══════════════════════════════════════════════════════════════════
 export const UserDashboard = () => {
   const shouldReduceMotion = useReducedMotion();
-  const { orders } = useOrderInventory();
+  const { orders, isSyncing, refreshOrders } = useOrderInventory();
+  const { user } = useAuth();
 
+  // Backend already returns only the logged-in user's orders
+  const userOrders = useMemo(() => orders || [], [orders]);
+  
   // Separate active from past orders
   const { activeOrders, pastOrders, totalSpent } = useMemo(() => {
     const active = [];
     const past = [];
     let spent = 0;
 
-    (orders || []).forEach((o) => {
+    (userOrders || []).forEach((o) => {
       const s = o.status?.toLowerCase();
       if (s === "delivered" || s === "completed" || s === "cancelled") {
         past.push(o);
@@ -521,20 +527,19 @@ export const UserDashboard = () => {
     );
 
     return { activeOrders: active, pastOrders: past, totalSpent: spent };
-  }, [orders]);
+  }, [userOrders]);
 
-  const totalOrders = (orders || []).length;
+  const totalOrders = (userOrders || []).length;
 
   // Reorder handler — adds all items from a past order back to context
   const handleReorder = (order) => {
     if (!order.items?.length) return;
-    // Navigate to menu or trigger cart re‑add via context (placeholder — integrates with actual cart)
     window.location.hash = "#menu";
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ── Empty state ──
-  if (!orders || orders.length === 0) {
+  // Empty state 
+  if (!userOrders || userOrders.length === 0) {
     return (
       <section
         className="min-h-screen bg-[#FFFDF7] pt-24 pb-16 px-4"
@@ -553,22 +558,35 @@ export const UserDashboard = () => {
       aria-label="User dashboard"
     >
       <div className="mx-auto max-w-5xl space-y-8">
-        {/* ── Welcome Header ── */}
+        {/* Welcome Header  */}
         <motion.div
           initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex items-center justify-center w-11 h-11 rounded-full bg-[#941508]">
-              <User size={20} className="text-white" aria-hidden="true" />
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-[#941508]">
+                <User size={20} className="text-white" aria-hidden="true" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-extrabold text-[#351B17] font-['Poppins',sans-serif] leading-tight">
+                  Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}!
+                </h1>
+                <p className="text-xs text-[#7A5C55]">Here's what's happening with your orders</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-[#351B17] font-['Poppins',sans-serif] leading-tight">
-                Welcome back!
-              </h1>
-              <p className="text-xs text-[#7A5C55]">Here's what's happening with your orders</p>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => refreshOrders()}
+              disabled={isSyncing}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7A5C55] hover:text-[#941508] bg-white border border-[#E8D595] px-3 py-1.5 rounded-full transition-all cursor-pointer shadow-2xs"
+              title="Refresh orders live"
+            >
+              <RefreshCw size={13} className={isSyncing ? "animate-spin text-[#941508]" : ""} />
+              <span>{isSyncing ? "Syncing..." : "Live Sync"}</span>
+            </button>
           </div>
 
           {/* Quick Stats */}
@@ -597,7 +615,7 @@ export const UserDashboard = () => {
           </div>
         </motion.div>
 
-        {/* ── Active Order Trackers ── */}
+        {/* Active Order Trackers  */}
         {activeOrders.length > 0 && (
           <div className="space-y-5">
             <SectionHeader
@@ -616,7 +634,7 @@ export const UserDashboard = () => {
           </div>
         )}
 
-        {/* ── Order History ── */}
+        {/*  Order History  */}
         {pastOrders.length > 0 && (
           <div className="space-y-4">
             <SectionHeader

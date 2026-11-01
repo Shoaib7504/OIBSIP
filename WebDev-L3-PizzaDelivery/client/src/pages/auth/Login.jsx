@@ -37,15 +37,6 @@ export const Login = () => {
     },
   });
 
-  const handleQuickFill = (role) => {
-    if (role === "admin") {
-      setValue("email", "admin@pizzacrave.com");
-      setValue("password", "Admin@123456");
-    } else {
-      setValue("email", "customer@pizzacrave.com");
-      setValue("password", "Customer@123456");
-    }
-  };
 
   const onSubmit = async (data) => {
     console.log("Login Form Data:", data);
@@ -132,29 +123,7 @@ export const Login = () => {
         </div>
 
         {/* Quick Demo Fill Buttons for Reviewers */}
-        <div className="mb-6 p-3 bg-[#FFF0B8]/50 rounded-2xl border border-[#E8D595] flex items-center justify-between text-xs">
-          <span className="font-bold text-[#351B17] flex items-center gap-1.5">
-            <Sparkles size={14} className="text-[#F49A13]" />
-            Quick Demo:
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickFill("user")}
-              className="px-2.5 py-1 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg font-bold text-[11px] text-[#351B17] cursor-pointer transition-colors"
-            >
-              Demo User
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill("admin")}
-              className="px-2.5 py-1 bg-[#941508] hover:bg-[#7d1106] text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors"
-            >
-              Demo Admin
-            </button>
-          </div>
-        </div>
-
+        
         {/* Login Form using React Hook Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {/* Email Field */}

@@ -113,6 +113,8 @@ export const AdminDashboard = () => {
     updateThreshold,
     restockItem,
     getLowStockItems,
+    refreshOrders,
+    isSyncing,
   } = useOrderInventory();
 
   // Active Tab: "orders" | "inventory"
@@ -218,12 +220,24 @@ export const AdminDashboard = () => {
             </p>
           </div>
 
-          {/* Quick tab switcher pill */}
-          <div
-            className="flex items-center bg-white p-1 rounded-full border border-[#E8D595] shadow-xs self-start md:self-auto"
-            role="tablist"
-            aria-label="Admin Navigation Tabs"
-          >
+          {/* Quick tab switcher pill & Live Sync */}
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => refreshOrders()}
+              disabled={isSyncing}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7A5C55] hover:text-[#941508] bg-white border border-[#E8D595] px-3.5 py-2 rounded-full transition-all cursor-pointer shadow-2xs hover:bg-[#FFF0B8]/40 min-h-[40px]"
+              title="Refresh live orders from database"
+            >
+              <RefreshCw size={14} className={isSyncing ? "animate-spin text-[#941508]" : ""} />
+              <span>{isSyncing ? "Syncing..." : "Sync Orders"}</span>
+            </button>
+
+            <div
+              className="flex items-center bg-white p-1 rounded-full border border-[#E8D595] shadow-xs"
+              role="tablist"
+              aria-label="Admin Navigation Tabs"
+            >
             <button
               type="button"
               role="tab"
@@ -271,6 +285,7 @@ export const AdminDashboard = () => {
             </button>
           </div>
         </div>
+      </div>
 
         {/* 4 KPI Cards Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -557,11 +572,25 @@ export const AdminDashboard = () => {
                               <div className="space-y-3">
                                 <div>
                                   <h4 className="text-xs font-black uppercase tracking-wider text-[#941508] mb-1.5">
-                                    Delivery Destination
+                                    Customer &amp; Delivery Destination
                                   </h4>
-                                  <p className="text-xs text-[#351B17] bg-white p-2.5 rounded-xl border border-gray-100">
-                                    {order.deliveryAddress || "123 Main Street, Apt 4B"}
-                                  </p>
+                                  <div className="text-xs text-[#351B17] bg-white p-2.5 rounded-xl border border-gray-100 space-y-1">
+                                    <p className="font-bold">{order.deliveryAddress || "Standard Delivery"}</p>
+                                    {order.customerPhone && (
+                                      <p className="text-[11px] text-[#7A5C55]">📞 {order.customerPhone}</p>
+                                    )}
+                                    {order.customerEmail && (
+                                      <p className="text-[11px] text-[#7A5C55]">✉️ {order.customerEmail}</p>
+                                    )}
+                                    <div className="pt-1 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                                      <span className="font-bold text-[#941508]">
+                                        Payment: {order.paymentMethod || "COD"}
+                                      </span>
+                                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px]">
+                                        {order.paymentStatus || "Pending"}
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
 
                                 {/* Status Timeline History */}

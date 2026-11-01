@@ -45,20 +45,24 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (pizza, size = "Medium", customOptions = null) => {
     // Determine unit price based on size
-    let unitPrice = pizza.price;
-    if (pizza.sizes && pizza.sizes[size.toLowerCase()]) {
-      unitPrice = pizza.sizes[size.toLowerCase()];
-    } else if (size === "Small") {
-      unitPrice = Math.max(5.99, Number((pizza.price * 0.8).toFixed(2)));
-    } else if (size === "Large") {
-      unitPrice = Number((pizza.price * 1.35).toFixed(2));
+    const selectedSize = size.toLowerCase();
+
+    let unitPrice = pizza.prices?.[selectedSize];
+
+    if (unitPrice === undefined) {
+      unitPrice = pizza.price;
     }
+
+    unitPrice = Number(unitPrice);
+
 
     if (customOptions?.extraPrice) {
       unitPrice += customOptions.extraPrice;
     }
 
-    const cartKey = `${pizza.id || pizza.name}-${size}-${customOptions ? JSON.stringify(customOptions) : "standard"}`;
+    const pizzaId = pizza._id || pizza.id;
+
+    const cartKey = `${pizzaId}-${size}-${customOptions ? JSON.stringify(customOptions) : "standard"}`;
 
     setCartItems((prevItems) => {
       const existing = prevItems.find((item) => item.cartKey === cartKey);
@@ -71,7 +75,9 @@ export const CartProvider = ({ children }) => {
         ...prevItems,
         {
           cartKey,
-          id: pizza.id || Date.now().toString(),
+          id: pizza._id || pizza.id,
+          _id: pizza._id || pizza.id,
+          pizza: pizza._id || pizza.id,
           name: pizza.name,
           image: pizza.image,
           price: unitPrice,

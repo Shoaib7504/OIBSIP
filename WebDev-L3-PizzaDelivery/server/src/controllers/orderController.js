@@ -1,7 +1,8 @@
+import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Pizza from "../models/Pizza.js";
 
-// place a new order
+// Place a new order & decrement pizza stock in MongoDB
 export const createOrder = async (req, res, next) => {
   try {
     const { customer, items, totalAmount, paymentMethod } = req.body;
@@ -10,27 +11,43 @@ export const createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
-    // check stock for each item
+    // Resolve pizza and check stock for each item
     for (const item of items) {
-      if (!item.pizza) continue;
-      const pizza = await Pizza.findById(item.pizza);
-      if (!pizza) {
-        return res.status(400).json({ success: false, message: `${item.name} is no longer available` });
+      let pizza = null;
+
+      if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
+        pizza = await Pizza.findById(item.pizza);
       }
-      if (pizza.stock < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: pizza.stock === 0
-            ? `${pizza.name} is out of stock`
-            : `Only ${pizza.stock} ${pizza.name} left in stock`,
-        });
+
+      // If not resolved by ID, match by pizza name
+      if (!pizza && item.name) {
+        const cleanName = item.name.trim();
+        pizza =
+          (await Pizza.findOne({ name: { $regex: new RegExp(`^${cleanName}$`, "i") } })) ||
+          (await Pizza.findOne({ name: { $regex: new RegExp(cleanName.split(" ")[0], "i") } }));
+      }
+
+      if (pizza) {
+        item.pizza = pizza._id; // Attach real MongoDB ObjectId
+        if (pizza.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message:
+              pizza.stock === 0
+                ? `${pizza.name} is out of stock`
+                : `Only ${pizza.stock} ${pizza.name} left in stock`,
+          });
+        }
       }
     }
 
-    // reduce stock
+    // Decrement stock for each resolved pizza in MongoDB
     for (const item of items) {
-      if (!item.pizza) continue;
-      await Pizza.findByIdAndUpdate(item.pizza, { $inc: { stock: -item.quantity } });
+      if (item.pizza) {
+        await Pizza.findByIdAndUpdate(item.pizza, {
+          $inc: { stock: -item.quantity },
+        });
+      }
     }
 
     const order = await Order.create({
@@ -47,7 +64,7 @@ export const createOrder = async (req, res, next) => {
   }
 };
 
-// get all orders
+// Get all orders
 export const getAllOrders = async (req, res, next) => {
   try {
     const filter = {};
@@ -61,18 +78,31 @@ export const getAllOrders = async (req, res, next) => {
   }
 };
 
-// get single order
+// Get single order
 export const getOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
+
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+   
+   //Admin only access every order
+   if(
+    req.user.role !=="admin"&&
+    order.user?.toString() !==req.user._id.toString()
+   ){
+    return res.status(403).json({
+        success:false,
+        message:"Not authorized to view this order"
+    })
+   }
+   
     res.json({ success: true, data: order });
   } catch (err) {
     next(err);
   }
 };
 
-// update order status
+// Update order status
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const order = await Order.findByIdAndUpdate(
@@ -82,6 +112,23 @@ export const updateOrderStatus = async (req, res, next) => {
     );
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
     res.json({ success: true, data: order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//get logged in user orders
+export const getMyOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({
+      user: req.user._id,
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
   } catch (err) {
     next(err);
   }
