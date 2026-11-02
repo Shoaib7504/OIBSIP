@@ -11,6 +11,7 @@ import {
   getMyOrders as fetchMyBackendOrders,
   createOrder as createBackendOrderApi,
   updateOrderStatus as updateBackendOrderStatusApi,
+  cancelOrder as cancelBackendOrderApi,
 } from "../services/orderServices";
 
 import { useAuth } from "./AuthContext";
@@ -351,10 +352,28 @@ export function OrderInventoryProvider({ children }) {
   );
 
   const cancelOrder = useCallback(
-    (orderId) => {
-      return updateOrderStatus(orderId, "cancelled");
-    },
-    [updateOrderStatus]
+    async (orderId) => {
+      try {
+        const res = await cancelBackendOrderApi(orderId);
+        if (!res?.success) {
+          throw new Error(res?.message || "Failed to cancel order")
+        }
+        await refreshOrders()
+        return {
+          success: true
+        }
+      } catch (error) {
+        console.error("[PizzaCrave] Order cancellation failed:", err);
+
+        return {
+          success: false,
+          message:
+            err.response?.data?.message ||
+            err.message ||
+            "Failed to cancel order",
+        };
+      }
+    }
   );
 
   //  Manual Inventory Controls 

@@ -51,7 +51,7 @@ export const createOrder = async (req, res, next) => {
     }
 
     const order = await Order.create({
-      user: req.body.user || null,
+      user: req.user.id || null,
       customer,
       items,
       totalAmount,
@@ -84,18 +84,18 @@ export const getOrderById = async (req, res, next) => {
     const order = await Order.findById(req.params.id);
 
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
-   
-   //Admin only access every order
-   if(
-    req.user.role !=="admin"&&
-    order.user?.toString() !==req.user._id.toString()
-   ){
-    return res.status(403).json({
-        success:false,
-        message:"Not authorized to view this order"
-    })
-   }
-   
+
+    //Admin only access every order
+    if (
+      req.user.role !== "admin" &&
+      order.user?.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this order"
+      })
+    }
+
     res.json({ success: true, data: order });
   } catch (err) {
     next(err);
@@ -117,7 +117,7 @@ export const updateOrderStatus = async (req, res, next) => {
   }
 };
 
-//get logged in user orders
+//get only logged in user orders
 export const getMyOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({
@@ -133,3 +133,45 @@ export const getMyOrders = async (req, res, next) => {
     next(err);
   }
 };
+
+
+//Cancel customer's own order
+export const cancelMyOrder = async (req, res, next) => {
+
+  try {
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order || order.user?.toString() !== req.user._id.toString()) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (["Delivered", "Cancelled"].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel an order with status: ${order.status} order`
+      })
+    }
+    order.status = "Cancelled";
+    await order.save();
+
+    //increment the stock
+    for (const item of order.items) {
+      if (item.pizza) {
+        await Pizza.findByIdAndUpdate(item.pizza, {
+          $inc: { stock: item.quantity }
+        })
+      }
+    }
+    res.json({
+      success: true,
+      message: "Order cancelled successfully",
+      data: order
+    })
+  } catch (err) {
+    next(err);
+  }
+}

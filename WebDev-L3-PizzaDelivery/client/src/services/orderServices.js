@@ -33,3 +33,9 @@ export const getMyOrders = async () => {
   const response = await api.get("/api/orders/my-orders");
   return response.data;
 };
+
+// Customer can only cancel their order
+export const cancelOrder = async(id) => {
+  const response = await api.patch(`/api/orders/${id}/cancel`);
+  return response.data;
+}

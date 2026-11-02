@@ -198,7 +198,7 @@ const VerticalConnectingLine = ({ completed }) => (
 );
 
 // Active Order Tracker Card 
-const ActiveOrderTracker = ({ order, shouldReduceMotion }) => {
+const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel }) => {
   const [itemsExpanded, setItemsExpanded] = useState(false);
   const currentIdx = statusToStageIndex(order.status);
   const pct = progressPercent(currentIdx);
@@ -325,6 +325,20 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion }) => {
 
       {/* Order Items Summary (collapsible) */}
       <div className="border-t border-[#F3E8C8]">
+        {/* Cancel Order Button */}
+        {onCancel && (
+          <div className="px-4 pt-4 flex justify-end hover:cursor-pointer ">
+            <Button
+              size="sm"
+              variant="outline"
+              icon={XCircle}
+              onClick={() => onCancel(order._id || order.id)}
+              className="!text-red-600 !border-red-200 hover:!bg-red-50"
+            >
+              Cancel Order
+            </Button>
+          </div>
+        )}
         <button
           onClick={() => setItemsExpanded((p) => !p)}
           className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-[#351B17] hover:bg-[#FFFDF7] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] focus-visible:ring-inset"
@@ -439,8 +453,8 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
         </span>
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${isCancelled
-              ? "bg-red-50 text-red-600 border border-red-200"
-              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+            ? "bg-red-50 text-red-600 border border-red-200"
+            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
             }`}
         >
           {isCancelled ? "Cancelled" : "Delivered"}
@@ -497,12 +511,12 @@ const EmptyState = ({ shouldReduceMotion }) => (
 // Main Component
 export const UserDashboard = () => {
   const shouldReduceMotion = useReducedMotion();
-  const { orders, isSyncing, refreshOrders } = useOrderInventory();
+  const { orders, isSyncing, refreshOrders, cancelOrder } = useOrderInventory();
   const { user } = useAuth();
 
   // Backend already returns only the logged-in user's orders
   const userOrders = useMemo(() => orders || [], [orders]);
-  
+
   // Separate active from past orders
   const { activeOrders, pastOrders, totalSpent } = useMemo(() => {
     const active = [];
@@ -530,6 +544,23 @@ export const UserDashboard = () => {
   }, [userOrders]);
 
   const totalOrders = (userOrders || []).length;
+  //Cancle Customer own order
+  const handleCancelOrder = async (orderId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+
+    if (!confirmed) return;
+
+    const result = await cancelOrder(orderId);
+
+    if (!result.success) {
+      window.alert(result.message || "Failed to cancel order.");
+      return;
+    }
+
+    window.alert("Your order has been cancelled successfully.");
+  };
 
   // Reorder handler — adds all items from a past order back to context
   const handleReorder = (order) => {
@@ -629,6 +660,7 @@ export const UserDashboard = () => {
                 key={order.id}
                 order={order}
                 shouldReduceMotion={shouldReduceMotion}
+                onCancel={handleCancelOrder}
               />
             ))}
           </div>

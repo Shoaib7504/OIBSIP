@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createOrder, getAllOrders, getMyOrders, getOrderById, updateOrderStatus } from "../controllers/orderController.js";
+import { cancelMyOrder, createOrder, getAllOrders, getMyOrders, getOrderById, updateOrderStatus } from "../controllers/orderController.js";
 import { protect,adminOnly } from "../middleware/authMiddleware.js";
 const router = Router();
 
@@ -12,6 +12,8 @@ router.get("/", protect, adminOnly, getAllOrders);
 router.get("/my-orders", protect, getMyOrders);
 router.patch("/:id/status", protect, adminOnly, updateOrderStatus);
 
+//Customer can only cancel their own order
+router.patch("/:id/cancel",protect,cancelMyOrder);
 // Logged-in users
 router.get("/:id", protect, getOrderById);
 
