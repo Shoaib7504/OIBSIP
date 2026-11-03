@@ -14,6 +14,11 @@ import {
   cancelOrder as cancelBackendOrderApi,
 } from "../services/orderServices";
 
+import {
+  getAllInventory as fetchBackendInventory,
+  updateInventory as updateBackendInventory,
+} from "../services/inventoryServices";
+
 import { useAuth } from "./AuthContext";
 // Storage Keys
 const STORAGE_KEYS = {
@@ -251,6 +256,34 @@ export function OrderInventoryProvider({ children }) {
       setIsSyncing(false);
     }
   }, [user?._id, user?.role]);
+  // Sync inventory with Backend
+  const refreshInventory = useCallback(async () => {
+    if (!user || user.role !== "admin") return;
+
+    try {
+      const res = await fetchBackendInventory();
+
+      if (res?.success && Array.isArray(res.data)) {
+        const normalizedInventory = res.data.map((item) => ({
+          ...item,
+          id: item._id,
+        }));
+
+        setInventory(normalizedInventory);
+      }
+    } catch (err) {
+      console.error(
+        "[PizzaCrave] Backend inventory sync failed:",
+        err.message
+      );
+    }
+  }, [user?._id, user?.role]);
+  // Load backend inventory when admin logs in
+  useEffect(() => {
+    if (user?.role === "admin") {
+      refreshInventory();
+    }
+  }, [user?.role, refreshInventory]);
   // Initial load and periodic polling every 6 seconds for real-time order tracking
   useEffect(() => {
     refreshOrders();
@@ -377,35 +410,109 @@ export function OrderInventoryProvider({ children }) {
   );
 
   //  Manual Inventory Controls 
-  const updateStock = useCallback(
-    (itemId, newStock) => {
-      setInventory((prev) => {
-        const updated = prev.map((item) =>
-          item.id === itemId
-            ? { ...item, stock: Math.max(0, Math.round(newStock * 10) / 10) }
-            : item
-        );
-        broadcast("INVENTORY_UPDATE", updated);
-        return updated;
-      });
-    },
-    [broadcast]
-  );
+ const updateStock = useCallback(
+  async (itemId, newStock) => {
+    try {
+      const stock = Math.max(
+        0,
+        Math.round(newStock * 10) / 10
+      );
 
-  const restockItem = useCallback(
-    (itemId, addAmount) => {
+      const res = await updateBackendInventory(itemId, {
+        stock,
+      });
+
+      if (!res?.success || !res?.data) {
+        throw new Error(
+          res?.message || "Failed to update inventory"
+        );
+      }
+
+      const updatedItem = {
+        ...res.data,
+        id: res.data._id,
+      };
+
       setInventory((prev) => {
         const updated = prev.map((item) =>
-          item.id === itemId
-            ? { ...item, stock: item.stock + Math.max(0, addAmount) }
-            : item
+          item.id === itemId ? updatedItem : item
         );
+
         broadcast("INVENTORY_UPDATE", updated);
         return updated;
       });
-    },
-    [broadcast]
-  );
+
+      return { success: true };
+    } catch (err) {
+      console.error("[PizzaCrave] Stock update failed:", err);
+
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to update stock",
+      };
+    }
+  },
+  [broadcast]
+);
+const restockItem = useCallback(
+  async (itemId, addAmount) => {
+    try {
+      const item = inventory.find(
+        (item) => item.id === itemId
+      );
+
+      if (!item) {
+        throw new Error("Inventory item not found");
+      }
+
+      const amount = Math.max(0, Number(addAmount));
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Restock amount must be greater than 0");
+      }
+
+      const res = await updateBackendInventory(itemId, {
+        stock: item.stock + amount,
+      });
+
+      if (!res?.success || !res?.data) {
+        throw new Error(
+          res?.message || "Failed to restock item"
+        );
+      }
+
+      const updatedItem = {
+        ...res.data,
+        id: res.data._id,
+      };
+
+      setInventory((prev) => {
+        const updated = prev.map((item) =>
+          item.id === itemId ? updatedItem : item
+        );
+
+        broadcast("INVENTORY_UPDATE", updated);
+        return updated;
+      });
+
+      return { success: true };
+    } catch (err) {
+      console.error("[PizzaCrave] Restock failed:", err);
+
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to restock item",
+      };
+    }
+  },
+  [inventory, broadcast]
+);
 
   const resetInventoryItem = useCallback(
     (itemId) => {
@@ -422,20 +529,56 @@ export function OrderInventoryProvider({ children }) {
     [broadcast]
   );
 
-  const updateThreshold = useCallback(
-    (itemId, newThreshold) => {
+const updateThreshold = useCallback(
+  async (itemId, newThreshold) => {
+    try {
+      const threshold = Math.max(
+        1,
+        Math.round(newThreshold)
+      );
+
+      const res = await updateBackendInventory(itemId, {
+        threshold,
+      });
+
+      if (!res?.success || !res?.data) {
+        throw new Error(
+          res?.message || "Failed to update threshold"
+        );
+      }
+
+      const updatedItem = {
+        ...res.data,
+        id: res.data._id,
+      };
+
       setInventory((prev) => {
         const updated = prev.map((item) =>
-          item.id === itemId
-            ? { ...item, threshold: Math.max(1, Math.round(newThreshold)) }
-            : item
+          item.id === itemId ? updatedItem : item
         );
+
         broadcast("INVENTORY_UPDATE", updated);
         return updated;
       });
-    },
-    [broadcast]
-  );
+
+      return { success: true };
+    } catch (err) {
+      console.error(
+        "[PizzaCrave] Threshold update failed:",
+        err
+      );
+
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to update threshold",
+      };
+    }
+  },
+  [broadcast]
+);
 
   const getLowStockItems = useCallback(() => {
     return inventory.filter((item) => item.stock <= item.threshold);
@@ -460,6 +603,7 @@ export function OrderInventoryProvider({ children }) {
       lowStockItems,
       isSyncing,
       refreshOrders,
+      refreshInventory,
       placeOrder: placeBackendOrder,
       placeBackendOrder,
       updateOrderStatus,
@@ -478,6 +622,7 @@ export function OrderInventoryProvider({ children }) {
       lowStockItems,
       isSyncing,
       refreshOrders,
+      refreshInventory,
       placeBackendOrder,
       updateOrderStatus,
       cancelOrder,
