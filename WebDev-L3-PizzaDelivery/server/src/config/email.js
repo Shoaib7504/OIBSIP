@@ -24,7 +24,7 @@ export const verifyEmailConnection = async () => {
     }
     const currentTransporter = getTransporter();
     await currentTransporter.verify();
-    console.log("✅ Email server is ready to send messages");
+    console.log(" Email server is ready to send messages");
     return true;
   } catch (error) {
     console.warn("⚠️ Warning: Email service connection failed:", error.message || error);
