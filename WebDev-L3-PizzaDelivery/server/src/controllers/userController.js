@@ -326,3 +326,143 @@ export const resendVerificationEmail = async (req, res, next) => {
     next(err);
   }
 };
+
+// Forgot password
+// POST /api/users/forgot-password
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide your email address",
+      });
+    }
+
+    const normalizeEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ email: normalizeEmail });
+
+    // Generic response prevents email enumeration
+    const successMessage =
+      "If an account exists with this email, a password reset link has been sent.";
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: successMessage,
+      });
+    }
+
+    // Generate secure reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // Store only the hashed token
+    user.passwordResetTokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // Token expires in 15 minutes
+    user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    const resetUrl =
+      `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+
+    try {
+      const mailer = getTransporter ? getTransporter() : transporter;
+      await mailer.sendMail({
+        from: process.env.SMTP_USER,
+        to: user.email,
+        subject: "Reset Your Pizza Delivery Password",
+        html: `
+          <h2>Password Reset Request</h2>
+          <p>We received a request to reset your password.</p>
+          <p>Click the button below to create a new password:</p>
+
+          <a href="${resetUrl}"
+             style="display:inline-block;padding:12px 20px;background:#e63946;color:white;text-decoration:none;border-radius:6px;">
+            Reset Password
+          </a>
+
+          <p>This link expires in 15 minutes.</p>
+          <p>If you did not request a password reset, please ignore this email.</p>
+        `,
+      });
+    } catch (emailError) {
+      user.passwordResetTokenHash = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+
+      throw emailError;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: successMessage,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Reset password
+// POST /api/users/reset-password
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Token and new password are required",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
+    // Hash received reset token
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Find user with a valid, unexpired reset token
+    const user = await User.findOne({
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpires: { $gt: Date.now() },
+    }).select("+passwordResetTokenHash +passwordResetExpires");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset link",
+      });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(password, salt);
+
+    // Clear reset token after successful password change
+    user.passwordResetTokenHash = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successful. Please log in with your new password.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};

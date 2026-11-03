@@ -5,6 +5,8 @@ import {
   getUserProfile,
   verifyEmail,
   resendVerificationEmail,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -14,6 +16,8 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerificationEmail);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 router.get("/profile", protect, getUserProfile);
 router.get("/:id", getUserProfile);
 
