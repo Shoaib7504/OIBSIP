@@ -1,4 +1,4 @@
-import Inventory from "../models/Inventory";
+import Inventory from "../models/Inventory.js";
 
 //get all inventory items
 export const getAllInventory=async(req,res,next)=>{
