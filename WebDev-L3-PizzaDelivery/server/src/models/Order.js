@@ -6,6 +6,16 @@ const orderItemSchema = new mongoose.Schema({
   size: { type: String, enum: ["small", "medium", "large"], default: "medium" },
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true },
+
+  customOptions: {
+    crust: { type: String },
+    sauce: { type: String },
+    cheese: { type: String },
+    toppings: {
+      type: [String],
+      default: [],
+    },
+  },
 });
 
 const orderSchema = new mongoose.Schema(
@@ -22,6 +32,28 @@ const orderSchema = new mongoose.Schema(
       },
     },
     items: [orderItemSchema],
+    inventoryDeductions: [
+      {
+        inventory: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Inventory",
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        category: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+      },
+    ],
     totalAmount: { type: Number, required: true },
     status: {
       type: String,
