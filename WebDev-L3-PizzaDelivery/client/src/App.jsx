@@ -23,19 +23,34 @@ import { Toast } from "./components/common/Toast";
 import { LandingPage } from "./pages/LandingPage";
 import { Login } from "./pages/auth/Login";
 import { Register } from "./pages/auth/Register";
+import { VerifyEmail } from "./pages/auth/VerifyEmail";
 import { UserDashboard } from "./components/dashboard/UserDashboard";
 import { AdminDashboard } from "./components/dashboard/AdminDashboard";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 /**
- * Scroll to top on route transition
+ * Scroll to top or target hash on route transition
  */
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [pathname]);
+    if (hash) {
+      const elementId = hash.replace("#", "");
+      // Allow brief tick for DOM rendering if switching routes
+      const timer = setTimeout(() => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [pathname, hash]);
 
   return null;
 }
@@ -91,6 +106,7 @@ function AppContent() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

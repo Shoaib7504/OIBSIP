@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   User,
@@ -477,39 +478,49 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
 };
 
 // Empty State 
-const EmptyState = ({ shouldReduceMotion }) => (
-  <motion.div
-    initial={shouldReduceMotion ? {} : { opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5 }}
-    className="flex flex-col items-center justify-center py-20 px-6 text-center"
-  >
-    <div className="flex items-center justify-center w-28 h-28 rounded-full bg-[#FFF0B8] mb-6">
-      <Pizza size={48} className="text-[#F49A13]" aria-hidden="true" />
-    </div>
-    <h2 className="text-2xl font-bold text-[#351B17] font-['Poppins',sans-serif] mb-2">
-      No orders yet!
-    </h2>
-    <p className="text-sm text-[#7A5C55] max-w-sm mb-6">
-      Browse our menu and place your first order. Delicious pizza is just a click away!
-    </p>
-    <Button
-      variant="primary"
-      size="lg"
-      icon={ArrowRight}
-      onClick={() => {
-        window.location.hash = "#menu";
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }}
-      aria-label="Explore menu"
+const EmptyState = ({ shouldReduceMotion, onExploreMenu }) => {
+  const navigate = useNavigate();
+
+  const handleExplore = () => {
+    if (onExploreMenu) {
+      onExploreMenu();
+    } else {
+      navigate("/#menu");
+    }
+  };
+
+  return (
+    <motion.div
+      initial={shouldReduceMotion ? {} : { opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col items-center justify-center py-20 px-6 text-center"
     >
-      Explore Menu
-    </Button>
-  </motion.div>
-);
+      <div className="flex items-center justify-center w-28 h-28 rounded-full bg-[#FFF0B8] mb-6">
+        <Pizza size={48} className="text-[#F49A13]" aria-hidden="true" />
+      </div>
+      <h2 className="text-2xl font-bold text-[#351B17] font-['Poppins',sans-serif] mb-2">
+        No orders yet!
+      </h2>
+      <p className="text-sm text-[#7A5C55] max-w-sm mb-6">
+        Browse our menu and place your first order. Delicious pizza is just a click away!
+      </p>
+      <Button
+        variant="primary"
+        size="lg"
+        icon={ArrowRight}
+        onClick={handleExplore}
+        aria-label="Explore menu"
+      >
+        Explore Menu
+      </Button>
+    </motion.div>
+  );
+};
 
 // Main Component
 export const UserDashboard = () => {
+  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const { orders, isSyncing, refreshOrders, cancelOrder } = useOrderInventory();
   const { user } = useAuth();
@@ -565,8 +576,7 @@ export const UserDashboard = () => {
   // Reorder handler — adds all items from a past order back to context
   const handleReorder = (order) => {
     if (!order.items?.length) return;
-    window.location.hash = "#menu";
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigate("/#menu");
   };
 
   // Empty state 

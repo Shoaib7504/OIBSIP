@@ -25,6 +25,7 @@ export const Register = () => {
   const { showToast } = useCart();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState(null);
 
   const {
     register,
@@ -56,21 +57,29 @@ export const Register = () => {
 
       const response = await registerUser(userData);
 
-      if (!response.success || !response.token) {
+      if (!response.success) {
         throw new Error(response.message || "Registration failed");
       }
 
-      // Save authentication data
-      setAuth(response.data, response.token);
-
-      showToast(
-        "Account created successfully! Welcome to PizzaCrave.",
-        "success"
-      );
-      navigate(
-        response.data.role === "admin" ? "/admin" : "/dashboard",
-        { replace: true }
-      );
+      if (response.token && response.data) {
+        // Direct session creation (e.g. if verification is not enforced)
+        setAuth(response.data, response.token);
+        showToast(
+          "Account created successfully! Welcome to PizzaCrave.",
+          "success"
+        );
+        navigate(
+          response.data.role === "admin" ? "/admin" : "/dashboard",
+          { replace: true }
+        );
+      } else {
+        // Verification email dispatched
+        setRegisteredEmail(userData.email);
+        showToast(
+          response.message || "Registration successful! Please check your email to verify.",
+          "success"
+        );
+      }
     } catch (error) {
       console.error("Register error:", error);
       const message =
@@ -132,8 +141,35 @@ export const Register = () => {
           </p>
         </div>
 
-        {/* Register Form using React Hook Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        {/* Registered Success Screen */}
+        {registeredEmail ? (
+          <div className="py-6 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-amber-50 text-[#941508] border border-amber-200 flex items-center justify-center mx-auto shadow-sm">
+              <Mail className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-[#351B17]">
+              Check Your Inbox!
+            </h2>
+            <p className="text-sm text-[#786C55] leading-relaxed">
+              We've sent a verification link to{" "}
+              <strong className="text-[#351B17] font-semibold">{registeredEmail}</strong>.
+            </p>
+            <p className="text-xs text-[#786C55] bg-[#FFF0B8]/40 border border-[#E8D595] p-3 rounded-xl">
+              Please click the link in your email within 15 minutes to verify your account and automatically log in.
+            </p>
+            <div className="pt-3 space-y-2">
+              <Link
+                to="/login"
+                className="inline-block w-full py-3 bg-[#941508] hover:bg-[#7e1207] text-white rounded-xl font-bold text-sm shadow-md transition-colors"
+              >
+                Go to Sign In
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Register Form using React Hook Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {/* Full Name */}
           <div>
             <label
@@ -397,6 +433,8 @@ export const Register = () => {
             </Button>
           </div>
         </form>
+        </>
+        )}
 
         {/* Footer Link to Login */}
         <div className="mt-6 pt-5 border-t border-gray-100 text-center">

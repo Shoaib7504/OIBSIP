@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import crypto from "crypto";
-import transporter from "../config/email.js";
+import transporter, { getTransporter } from "../config/email.js";
 // Helper function to generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "default_jwt_secret", {
@@ -219,20 +219,108 @@ export const verifyEmail = async (req, res, next) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid or expired verification link",
+        message:
+          "Invalid or expired verification link. If you already verified your email, please proceed to login.",
       });
     }
 
-    // Verify email and clear verification token
-    user.isEmailVerified = true;
-    user.emailVerificationTokenHash = undefined;
-    user.emailVerificationExpires = undefined;
+    // Verify email (idempotent: keeps token valid for its 15m window to avoid StrictMode/refresh race condition)
+    if (!user.isEmailVerified) {
+      user.isEmailVerified = true;
+      await user.save();
+    }
 
-    await user.save();
+    // Auto-login: generate JWT token and return session data
+    const authToken = generateToken(user._id);
 
     return res.status(200).json({
       success: true,
-      message: "Email verified successfully. You can now log in.",
+      message: "Email verified successfully! Welcome to PizzaCrave.",
+      token: authToken,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        isAdmin: user.role === "admin",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Resend email verification link
+// POST /api/users/resend-verification
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email address is required",
+      });
+    }
+
+    const normalizeEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizeEmail });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email address.",
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "This account's email is already verified. You can log in directly.",
+      });
+    }
+
+    // Generate new secure email verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const emailVerificationTokenHash = crypto
+      .createHash("sha256")
+      .update(verificationToken)
+      .digest("hex");
+
+    user.emailVerificationTokenHash = emailVerificationTokenHash;
+    user.emailVerificationExpires = Date.now() + 15 * 60 * 1000;
+    await user.save();
+
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const verificationUrl = `${clientUrl}/verify-email?token=${verificationToken}`;
+
+    const mailer = getTransporter ? getTransporter() : transporter;
+    await mailer.sendMail({
+      from: process.env.SMTP_USER,
+      to: user.email,
+      subject: "Verify Your Pizza Delivery Account",
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #E8D595; border-radius: 12px; background: #FFFDF7;">
+          <h2 style="color: #941508; margin-bottom: 8px;">Welcome to PizzaCrave!</h2>
+          <p style="color: #351B17; font-size: 15px; line-height: 1.5;">Please verify your email address to activate your account and start ordering:</p>
+          <div style="margin: 24px 0;">
+            <a href="${verificationUrl}"
+               style="display: inline-block; padding: 14px 28px; background: #941508; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+              Verify Email Address
+            </a>
+          </div>
+          <p style="color: #786C55; font-size: 13px;">This verification link will expire in 15 minutes.</p>
+          <hr style="border: 0; border-top: 1px solid #E8D595; margin: 20px 0;" />
+          <p style="color: #786C55; font-size: 12px;">If you did not sign up for PizzaCrave, please disregard this email.</p>
+        </div>
+      `,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification email resent successfully. Please check your inbox.",
     });
   } catch (err) {
     next(err);
