@@ -3,7 +3,12 @@ import mongoose from "mongoose";
 const orderItemSchema = new mongoose.Schema({
   pizza: { type: mongoose.Schema.Types.ObjectId, ref: "Pizza" },
   name: { type: String, required: true },
-  size: { type: String, enum: ["small", "medium", "large"], default: "medium" },
+  size: {
+    type: String,
+    enum: ["small", "medium", "large"],
+    default: "medium",
+    set: (v) => (v ? v.toLowerCase() : "medium"),
+  },
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true },
 

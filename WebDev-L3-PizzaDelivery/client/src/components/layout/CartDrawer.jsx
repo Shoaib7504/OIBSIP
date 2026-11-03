@@ -107,6 +107,7 @@ export const CartDrawer = () => {
             size: (item.size || "medium").toLowerCase(),
             quantity: item.quantity,
             price: Number(item.price),
+            customOptions: item.customOptions || undefined,
           };
         }),
         totalAmount: Number(total.toFixed(2)),
@@ -205,15 +206,14 @@ export const CartDrawer = () => {
                       {drawerStep === "checkout"
                         ? "Delivery & Checkout"
                         : drawerStep === "success"
-                        ? "Order Confirmed!"
-                        : "Your Craving Cart"}
+                          ? "Order Confirmed!"
+                          : "Your Craving Cart"}
                     </h2>
                     <p className="text-xs text-[#7A5C55]">
                       {drawerStep === "checkout"
                         ? "Confirm your address & payment"
-                        : `${totalItemsCount} ${
-                            totalItemsCount === 1 ? "item" : "items"
-                          }`}
+                        : `${totalItemsCount} ${totalItemsCount === 1 ? "item" : "items"
+                        }`}
                     </p>
                   </div>
                 </div>
@@ -242,8 +242,8 @@ export const CartDrawer = () => {
                       {subtotal >= freeDeliveryThreshold
                         ? "🎉 You unlocked FREE Delivery!"
                         : `Add $${(freeDeliveryThreshold - subtotal).toFixed(
-                            2
-                          )} more for FREE Delivery`}
+                          2
+                        )} more for FREE Delivery`}
                     </span>
                     <span>{progressPercent.toFixed(0)}%</span>
                   </div>

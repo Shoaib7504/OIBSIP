@@ -95,15 +95,14 @@ export const CustomizerModal = () => {
       name: "Custom Masterpiece Pizza",
       price: totalPrice,
       image: PIZZA_IMAGES.customizerBase,
-      description: `${selectedCrust.name}, ${selectedSauce.name}, ${selectedCheese.name} with ${
-        selectedToppings.length ? selectedToppings.join(", ") : "no extra toppings"
-      }`,
+      description: `${selectedCrust.name}, ${selectedSauce.name}, ${selectedCheese.name} with ${selectedToppings.length ? selectedToppings.join(", ") : "no extra toppings"
+        }`,
     };
 
     addToCart(customPizza, "Medium", {
-      crust: selectedCrust.name,
-      sauce: selectedSauce.name,
-      cheese: selectedCheese.name,
+      crust: selectedCrust.id,
+      sauce: selectedSauce.id,
+      cheese: selectedCheese.id,
       toppings: selectedToppings,
     });
 
@@ -241,11 +240,10 @@ export const CustomizerModal = () => {
                         role="tab"
                         aria-selected={activeTab === tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] ${
-                          activeTab === tab.key
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] ${activeTab === tab.key
                             ? "bg-[#941508] text-white shadow-xs"
                             : "bg-white text-[#7A5C55] hover:text-[#351B17] border border-black/10"
-                        }`}
+                          }`}
                       >
                         {tab.label}
                       </button>
@@ -262,11 +260,10 @@ export const CustomizerModal = () => {
                           <div
                             key={crust.id}
                             onClick={() => setSelectedCrust(crust)}
-                            className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${
-                              selectedCrust.id === crust.id
+                            className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${selectedCrust.id === crust.id
                                 ? "bg-[#FFF0B8]/60 border-[#941508] shadow-xs"
                                 : "bg-white border-black/10 hover:border-[#941508]/40"
-                            }`}
+                              }`}
                           >
                             <div>
                               <h4 className="font-bold text-sm text-[#351B17]">{crust.name}</h4>
@@ -288,11 +285,10 @@ export const CustomizerModal = () => {
                           <div
                             key={sauce.id}
                             onClick={() => setSelectedSauce(sauce)}
-                            className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${
-                              selectedSauce.id === sauce.id
+                            className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${selectedSauce.id === sauce.id
                                 ? "bg-[#FFF0B8]/60 border-[#941508] shadow-xs"
                                 : "bg-white border-black/10 hover:border-[#941508]/40"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-3">
                               <span
@@ -318,11 +314,10 @@ export const CustomizerModal = () => {
                           <div
                             key={cheese.id}
                             onClick={() => setSelectedCheese(cheese)}
-                            className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${
-                              selectedCheese.id === cheese.id
+                            className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${selectedCheese.id === cheese.id
                                 ? "bg-[#FFF0B8]/60 border-[#941508] shadow-xs"
                                 : "bg-white border-black/10 hover:border-[#941508]/40"
-                            }`}
+                              }`}
                           >
                             <h4 className="font-bold text-sm text-[#351B17]">{cheese.name}</h4>
                             <span className="text-xs font-bold text-[#941508]">
@@ -345,21 +340,19 @@ export const CustomizerModal = () => {
                                 key={topping.id}
                                 type="button"
                                 onClick={() => toggleTopping(topping.id)}
-                                className={`p-2.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-left min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] ${
-                                  isChecked
+                                className={`p-2.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-left min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] ${isChecked
                                     ? "bg-[#FFF0B8]/70 border-[#941508]"
                                     : "bg-white border-black/10 hover:border-[#941508]/40"
-                                }`}
+                                  }`}
                                 role="checkbox"
                                 aria-checked={isChecked}
                               >
                                 <div className="flex items-center gap-2">
                                   <div
-                                    className={`w-4 h-4 rounded-md flex items-center justify-center ${
-                                      isChecked
+                                    className={`w-4 h-4 rounded-md flex items-center justify-center ${isChecked
                                         ? "bg-[#941508] text-white"
                                         : "border border-gray-300 bg-gray-50"
-                                    }`}
+                                      }`}
                                     aria-hidden="true"
                                   >
                                     {isChecked && <Check size={12} />}

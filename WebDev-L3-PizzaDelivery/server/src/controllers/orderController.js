@@ -1,66 +1,160 @@
 import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Pizza from "../models/Pizza.js";
+import Inventory from "../models/Inventory.js";
 
+import {
+  calculateIngredientRequirements,
+  deductInventoryIngredients,
+} from "../utils/inventoryHelper.js";
 // Place a new order & decrement pizza stock in MongoDB
 export const createOrder = async (req, res, next) => {
+  const session = await mongoose.startSession();
+
   try {
     const { customer, items, totalAmount, paymentMethod } = req.body;
 
-    if (!items || items.length === 0) {
-      return res.status(400).json({ success: false, message: "Cart is empty" });
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Cart is empty",
+      });
     }
 
-    // Resolve pizza and check stock for each item
-    for (const item of items) {
-      let pizza = null;
+    if (!customer || !Number.isFinite(Number(totalAmount)) || Number(totalAmount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order details",
+      });
+    }
 
-      if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
-        pizza = await Pizza.findById(item.pizza);
+    let createdOrder;
+
+    await session.withTransaction(async () => {
+      // 1. Validate custom pizza size
+      for (const item of items) {
+        if (item.customOptions && item.size?.toLowerCase() !== "medium") {
+          throw new Error(
+            "Custom pizza is currently available in Medium size only"
+          );
+        }
       }
 
-      // If not resolved by ID, match by pizza name
-      if (!pizza && item.name) {
-        const cleanName = item.name.trim();
-        pizza =
-          (await Pizza.findOne({ name: { $regex: new RegExp(`^${cleanName}$`, "i") } })) ||
-          (await Pizza.findOne({ name: { $regex: new RegExp(cleanName.split(" ")[0], "i") } }));
-      }
+      // 2. Calculate required ingredients
+      const ingredientRequirements =
+        calculateIngredientRequirements(items);
 
-      if (pizza) {
-        item.pizza = pizza._id; // Attach real MongoDB ObjectId
-        if (pizza.stock < item.quantity) {
-          return res.status(400).json({
-            success: false,
-            message:
+      // 3. Deduct ingredient inventory
+      const inventoryDeductions = await deductInventoryIngredients(
+        ingredientRequirements,
+        session
+      );
+
+      // 4. Resolve pizzas and deduct pizza stock atomically
+      const processedItems = [];
+
+      for (const item of items) {
+        const quantity = Number(item.quantity);
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+          throw new Error("Invalid pizza quantity");
+        }
+
+        let pizza = null;
+
+        if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
+          pizza = await Pizza.findById(item.pizza).session(session);
+        }
+
+        if (!pizza && item.name && !item.customOptions) {
+          const cleanName = item.name.trim();
+
+          pizza =
+            (await Pizza.findOne({
+              name: { $regex: new RegExp(`^${cleanName}$`, "i") },
+            }).session(session)) ||
+            (await Pizza.findOne({
+              name: {
+                $regex: new RegExp(cleanName.split(" ")[0], "i"),
+              },
+            }).session(session));
+        }
+
+        if (pizza) {
+          const updatedPizza = await Pizza.findOneAndUpdate(
+            {
+              _id: pizza._id,
+              stock: { $gte: quantity },
+            },
+            {
+              $inc: { stock: -quantity },
+            },
+            {
+              new: true,
+              session,
+            }
+          );
+
+          if (!updatedPizza) {
+            throw new Error(
               pizza.stock === 0
                 ? `${pizza.name} is out of stock`
-                : `Only ${pizza.stock} ${pizza.name} left in stock`,
+                : `Insufficient stock for ${pizza.name}`
+            );
+          }
+
+          processedItems.push({
+            ...item,
+            size: (item.size || "medium").toLowerCase(),
+            pizza: pizza._id,
+          });
+        } else {
+          processedItems.push({
+            ...item,
+            size: (item.size || "medium").toLowerCase(),
           });
         }
       }
-    }
 
-    // Decrement stock for each resolved pizza in MongoDB
-    for (const item of items) {
-      if (item.pizza) {
-        await Pizza.findByIdAndUpdate(item.pizza, {
-          $inc: { stock: -item.quantity },
-        });
-      }
-    }
+      // 5. Create order inside the same transaction
+      const [order] = await Order.create(
+        [
+          {
+            user: req.user?.id || null,
+            customer,
+            items: processedItems,
+            inventoryDeductions,
+            totalAmount,
+            paymentMethod,
+          },
+        ],
+        { session }
+      );
 
-    const order = await Order.create({
-      user: req.user.id || null,
-      customer,
-      items,
-      totalAmount,
-      paymentMethod,
+      createdOrder = order;
     });
 
-    res.status(201).json({ success: true, data: order });
+    return res.status(201).json({
+      success: true,
+      data: createdOrder,
+    });
   } catch (err) {
+    if (
+      err.message.includes("Insufficient stock") ||
+      err.message.includes("out of stock") ||
+      err.message.includes("Invalid") ||
+      err.message.includes("not found") ||
+      err.message.includes("Custom pizza")
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    }
+
     next(err);
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -137,10 +231,12 @@ export const getMyOrders = async (req, res, next) => {
 
 //Cancel customer's own order
 export const cancelMyOrder = async (req, res, next) => {
-  const session = await Order.db.startSession()
+  const session = await Order.db.startSession();
+
   try {
-    session.startTransaction()
-    //Atomicity cancel only an eligible order
+    session.startTransaction();
+
+    // 1. Atomically cancel an eligible order
     const order = await Order.findOneAndUpdate(
       {
         _id: req.params.id,
@@ -156,39 +252,72 @@ export const cancelMyOrder = async (req, res, next) => {
       }
     );
 
-    //Check why the update failed
+    // 2. Check why cancellation failed
     if (!order) {
-      const existingOrder = await Order.findById(req.params.id).session(session);
+      const existingOrder = await Order.findById(req.params.id).session(
+        session
+      );
+
       await session.abortTransaction();
 
-      if (!existingOrder || existingOrder.user?.toString() !== req.user._id.toString()) {
+      if (
+        !existingOrder ||
+        existingOrder.user?.toString() !== req.user._id.toString()
+      ) {
         return res.status(404).json({
           success: false,
-          message: "Order not found or you are not authorized"
-        })
+          message: "Order not found or you are not authorized",
+        });
       }
+
       return res.status(400).json({
         success: false,
-        message: `Cannot cancel an order with status: ${existingOrder.status} order`
-      })
+        message: `Cannot cancel an order with status: ${existingOrder.status}`,
+      });
     }
 
-
-    //Restore pizzas stock
+    // 3. Restore pizza stock
     for (const item of order.items) {
       if (item.pizza) {
-        await Pizza.findByIdAndUpdate(item.pizza, {
-          $inc: { stock: item.quantity }
-        }, { session })
+        const restoredPizza = await Pizza.findByIdAndUpdate(
+          item.pizza,
+          {
+            $inc: { stock: item.quantity },
+          },
+          { session }
+        );
+
+        if (!restoredPizza) {
+          throw new Error(`Pizza not found while restoring: ${item.name}`);
+        }
       }
     }
-    //Commit all database changes
-    await session.commitTransaction()
-    res.json({
+
+    // 4. Restore custom pizza ingredients
+    for (const deduction of order.inventoryDeductions || []) {
+      const restoredIngredient = await Inventory.findByIdAndUpdate(
+        deduction.inventory,
+        {
+          $inc: { stock: deduction.quantity },
+        },
+        { session }
+      );
+
+      if (!restoredIngredient) {
+        throw new Error(
+          `Inventory item not found while restoring: ${deduction.name}`
+        );
+      }
+    }
+
+    // 5. Commit all changes
+    await session.commitTransaction();
+
+    return res.json({
       success: true,
-      message: "Order cancelled successfully",
-      data: order
-    })
+      message: "Order cancelled and inventory restored successfully",
+      data: order,
+    });
   } catch (err) {
     if (session.inTransaction()) {
       await session.abortTransaction();
@@ -198,4 +327,4 @@ export const cancelMyOrder = async (req, res, next) => {
   } finally {
     await session.endSession();
   }
-}
+};
