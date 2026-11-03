@@ -137,41 +137,51 @@ export const getMyOrders = async (req, res, next) => {
 
 //Cancel customer's own order
 export const cancelMyOrder = async (req, res, next) => {
-
+  const session = await Order.db.startSession()
   try {
+    session.startTransaction()
 
     const order = await Order.findById(req.params.id);
 
+    //verify order ownership
     if (!order || order.user?.toString() !== req.user._id.toString()) {
       return res.status(404).json({
         success: false,
         message: "Order not found",
       });
     }
-
+    //chect whether cancellation is allowed
     if (["Delivered", "Cancelled"].includes(order.status)) {
       return res.status(400).json({
         success: false,
         message: `Cannot cancel an order with status: ${order.status} order`
       })
     }
+
+    //Update order status
     order.status = "Cancelled";
     await order.save();
 
-    //increment the stock
+    //Restore pizzas stock
     for (const item of order.items) {
       if (item.pizza) {
         await Pizza.findByIdAndUpdate(item.pizza, {
           $inc: { stock: item.quantity }
-        })
+        }, { session })
       }
     }
+    //Commit all database changes
+    await session.commitTransaction()
     res.json({
       success: true,
       message: "Order cancelled successfully",
       data: order
     })
   } catch (err) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    session.endSession();
     next(err);
   }
 }
