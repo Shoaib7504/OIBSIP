@@ -1,12 +1,27 @@
 import { Router } from "express";
-import { getAllPizzas, getPizzaById, createPizza, updatePizza, deletePizza } from "../controllers/pizzaController.js";
+
+import {
+  getAllPizzas,
+  getPizzaById,
+  createPizza,
+  updatePizza,
+  deletePizza,
+} from "../controllers/pizzaController.js";
+
+import {
+  protect,
+  adminOnly,
+} from "../middleware/authMiddleware.js";
 
 const router = Router();
 
+// Public routes
 router.get("/", getAllPizzas);
 router.get("/:id", getPizzaById);
-router.post("/", createPizza);
-router.put("/:id", updatePizza);
-router.delete("/:id", deletePizza);
+
+// Admin-only routes
+router.post("/", protect, adminOnly, createPizza);
+router.put("/:id", protect, adminOnly, updatePizza);
+router.delete("/:id", protect, adminOnly, deletePizza);
 
 export default router;
