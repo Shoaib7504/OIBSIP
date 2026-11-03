@@ -123,7 +123,7 @@ export const Login = () => {
         </div>
 
         {/* Quick Demo Fill Buttons for Reviewers */}
-        
+
         {/* Login Form using React Hook Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {/* Email Field */}
@@ -150,11 +150,10 @@ export const Login = () => {
                     message: "Please enter a valid email address",
                   },
                 })}
-                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                  errors.email
+                className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.email
                     ? "border-red-500 focus:ring-red-400 bg-red-50/20"
                     : "border-gray-200 focus:ring-[#941508]"
-                }`}
+                  }`}
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "login-email-error" : undefined}
               />
@@ -175,16 +174,12 @@ export const Login = () => {
               >
                 Password
               </label>
-              <a
-                href="#forgot"
-                onClick={(e) => {
-                  e.preventDefault();
-                  showToast("Password reset link sent to your registered email!", "info");
-                }}
+              <Link
+                to="/forgot-password"
                 className="text-xs font-bold text-[#941508] hover:underline"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -202,11 +197,10 @@ export const Login = () => {
                     message: "Password must be at least 6 characters",
                   },
                 })}
-                className={`w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                  errors.password
+                className={`w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border bg-[#FFFDF7] text-[#351B17] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${errors.password
                     ? "border-red-500 focus:ring-red-400 bg-red-50/20"
                     : "border-gray-200 focus:ring-[#941508]"
-                }`}
+                  }`}
                 aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "login-password-error" : undefined}
               />

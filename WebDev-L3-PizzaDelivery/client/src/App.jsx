@@ -27,7 +27,8 @@ import { VerifyEmail } from "./pages/auth/VerifyEmail";
 import { UserDashboard } from "./components/dashboard/UserDashboard";
 import { AdminDashboard } from "./components/dashboard/AdminDashboard";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-
+import { ForgotPassword } from "./pages/auth/ForgotPassword";
+import { ResetPassword } from "./pages/auth/ResetPassword";
 /**
  * Scroll to top or target hash on route transition
  */
@@ -107,6 +108,8 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
