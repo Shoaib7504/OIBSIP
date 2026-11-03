@@ -140,27 +140,39 @@ export const cancelMyOrder = async (req, res, next) => {
   const session = await Order.db.startSession()
   try {
     session.startTransaction()
+    //Atomicity cancel only an eligible order
+    const order = await Order.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        user: req.user._id,
+        status: { $nin: ["Delivered", "Cancelled"] },
+      },
+      {
+        $set: { status: "Cancelled" },
+      },
+      {
+        new: true,
+        session,
+      }
+    );
 
-    const order = await Order.findById(req.params.id);
+    //Check why the update failed
+    if (!order) {
+      const existingOrder = await Order.findById(req.params.id).session(session);
+      await session.abortTransaction();
 
-    //verify order ownership
-    if (!order || order.user?.toString() !== req.user._id.toString()) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-    //chect whether cancellation is allowed
-    if (["Delivered", "Cancelled"].includes(order.status)) {
+      if (!existingOrder || existingOrder.user?.toString() !== req.user._id.toString()) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found or you are not authorized"
+        })
+      }
       return res.status(400).json({
         success: false,
-        message: `Cannot cancel an order with status: ${order.status} order`
+        message: `Cannot cancel an order with status: ${existingOrder.status} order`
       })
     }
 
-    //Update order status
-    order.status = "Cancelled";
-    await order.save();
 
     //Restore pizzas stock
     for (const item of order.items) {
@@ -181,7 +193,9 @@ export const cancelMyOrder = async (req, res, next) => {
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
-    session.endSession();
+
     next(err);
+  } finally {
+    await session.endSession();
   }
 }
