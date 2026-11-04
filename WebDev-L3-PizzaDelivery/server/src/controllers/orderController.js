@@ -107,68 +107,137 @@ export const createOrder = async (req, res, next) => {
             price: itemUnitPrice,
           });
         } else {
-          // Regular Pizza: Resolve from DB and lookup price
-          if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
-            pizza = await Pizza.findById(item.pizza).session(session);
+          const cleanName = (item.name || "").trim();
+
+          // Check if item is a promotional deal / combo
+          let dealConfig = null;
+          if (/pepperoni.*combo|large pepperoni/i.test(cleanName)) {
+            dealConfig = {
+              name: "Large Pepperoni + 2 Drinks Combo",
+              price: 14.99,
+              pizzaSearch: "Pepperoni",
+              stockQty: 1,
+            };
+          } else if (/margherita.*combo|bogo.*margherita/i.test(cleanName)) {
+            dealConfig = {
+              name: "BOGO Margherita Combo",
+              price: 12.99,
+              pizzaSearch: "Margherita",
+              stockQty: 2,
+            };
           }
 
-          if (!pizza && item.name) {
-            const cleanName = item.name.trim();
-
+          if (dealConfig) {
+            // Find base pizza in database for stock deduction
             pizza =
               (await Pizza.findOne({
-                name: { $regex: new RegExp(`^${cleanName}$`, "i") },
+                name: { $regex: new RegExp(dealConfig.pizzaSearch, "i") },
               }).session(session)) ||
-              (await Pizza.findOne({
-                name: {
-                  $regex: new RegExp(cleanName.split(" ")[0], "i"),
-                },
-              }).session(session));
-          }
+              (await Pizza.findOne().session(session));
 
-          if (!pizza) {
-            throw new Error(`Pizza not found: ${item.name || item.pizza}`);
-          }
-
-          const size = (item.size || "medium").toLowerCase();
-          itemUnitPrice =
-            pizza.prices?.[size] ?? pizza.prices?.medium ?? pizza.price;
-
-          if (!itemUnitPrice) {
-            throw new Error(`Invalid price for size ${size} of ${pizza.name}`);
-          }
-
-          itemUnitPrice = Number(itemUnitPrice);
-          backendCalculatedSubtotal += itemUnitPrice * quantity;
-
-          const updatedPizza = await Pizza.findOneAndUpdate(
-            {
-              _id: pizza._id,
-              stock: { $gte: quantity },
-            },
-            {
-              $inc: { stock: -quantity },
-            },
-            {
-              new: true,
-              session,
+            if (!pizza) {
+              throw new Error(`Base pizza not found for ${cleanName}`);
             }
-          );
 
-          if (!updatedPizza) {
-            throw new Error(
-              pizza.stock === 0
-                ? `${pizza.name} is out of stock`
-                : `Insufficient stock for ${pizza.name}`
+            itemUnitPrice = dealConfig.price;
+            backendCalculatedSubtotal += itemUnitPrice * quantity;
+
+            const requiredStock = dealConfig.stockQty * quantity;
+            const updatedPizza = await Pizza.findOneAndUpdate(
+              {
+                _id: pizza._id,
+                stock: { $gte: requiredStock },
+              },
+              {
+                $inc: { stock: -requiredStock },
+              },
+              {
+                new: true,
+                session,
+              }
             );
-          }
 
-          processedItems.push({
-            ...item,
-            size,
-            price: itemUnitPrice,
-            pizza: pizza._id,
-          });
+            if (!updatedPizza) {
+              throw new Error(
+                pizza.stock === 0
+                  ? `${cleanName} is out of stock`
+                  : `Insufficient stock for ${cleanName}`
+              );
+            }
+
+            processedItems.push({
+              ...item,
+              size: (item.size || "large").toLowerCase(),
+              price: itemUnitPrice,
+              pizza: pizza._id,
+            });
+          } else {
+            // Regular Pizza: Resolve from DB and lookup price
+            if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
+              pizza = await Pizza.findById(item.pizza).session(session);
+            }
+
+            if (!pizza && item.name) {
+              pizza =
+                (await Pizza.findOne({
+                  name: { $regex: new RegExp(`^${cleanName}$`, "i") },
+                }).session(session)) ||
+                (await Pizza.findOne({
+                  name: {
+                    $regex: new RegExp(cleanName.replace(/pizza/i, "").trim().split(" ")[0], "i"),
+                  },
+                }).session(session)) ||
+                (await Pizza.findOne({
+                  name: {
+                    $regex: new RegExp(cleanName.split(" ")[0], "i"),
+                  },
+                }).session(session));
+            }
+
+            if (!pizza) {
+              throw new Error(`Pizza not found: ${item.name || item.pizza}`);
+            }
+
+            const size = (item.size || "medium").toLowerCase();
+            itemUnitPrice =
+              pizza.prices?.[size] ?? pizza.prices?.medium ?? pizza.price;
+
+            if (!itemUnitPrice) {
+              throw new Error(`Invalid price for size ${size} of ${pizza.name}`);
+            }
+
+            itemUnitPrice = Number(itemUnitPrice);
+            backendCalculatedSubtotal += itemUnitPrice * quantity;
+
+            const updatedPizza = await Pizza.findOneAndUpdate(
+              {
+                _id: pizza._id,
+                stock: { $gte: quantity },
+              },
+              {
+                $inc: { stock: -quantity },
+              },
+              {
+                new: true,
+                session,
+              }
+            );
+
+            if (!updatedPizza) {
+              throw new Error(
+                pizza.stock === 0
+                  ? `${pizza.name} is out of stock`
+                  : `Insufficient stock for ${pizza.name}`
+              );
+            }
+
+            processedItems.push({
+              ...item,
+              size,
+              price: itemUnitPrice,
+              pizza: pizza._id,
+            });
+          }
         }
       }
 

@@ -6,7 +6,7 @@ import { useCart } from "../../context/CartContext";
 import { PIZZA_IMAGES } from "../../data/pizzasData";
 
 export const DealsBanner = () => {
-  const { addToCart } = useCart();
+  const { addToCart, setIsCartOpen } = useCart();
   const shouldReduceMotion = useReducedMotion();
 
   const handleOrderDeal = (dealName, price) => {
@@ -20,6 +20,7 @@ export const DealsBanner = () => {
       },
       "Large"
     );
+    setIsCartOpen(true);
   };
 
   return (
