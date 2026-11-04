@@ -1,5 +1,6 @@
 
 import Order from "../models/Order.js";
+import stripe from "../config/stripe.js";
 import { createStripeCheckoutSession } from "../services/stripeService.js";
 
 export const createCheckoutSession = async (req, res, next) => {
@@ -40,6 +41,13 @@ export const createCheckoutSession = async (req, res, next) => {
       });
     }
 
+    if (order.paymentStatus !== "Pending") {
+      return res.status(400).json({
+        success: false,
+        message: "This order is not eligible for payment",
+      });
+    }
+
     if (order.status === "Cancelled") {
       return res.status(400).json({
         success: false,
@@ -51,13 +59,43 @@ export const createCheckoutSession = async (req, res, next) => {
       throw new Error("CLIENT_URL is not configured");
     }
 
+    // 1. Reuse an existing Checkout Session if possible
+    if (order.stripeCheckoutSessionId) {
+      const existingSession = await stripe.checkout.sessions.retrieve(
+        order.stripeCheckoutSessionId
+      );
+
+      // Reuse an open session instead of creating a duplicate
+      if (existingSession.status === "open") {
+        return res.status(200).json({
+          success: true,
+          message: "Existing Stripe Checkout Session reused",
+          data: {
+            sessionId: existingSession.id,
+            checkoutUrl: existingSession.url,
+          },
+        });
+      }
+
+      // A completed session must be verified through the webhook
+      if (existingSession.status === "complete") {
+        return res.status(409).json({
+          success: false,
+          message: "Checkout is complete. Payment confirmation is pending.",
+        });
+      }
+
+      // If expired, continue and create a new session
+    }
+
+    // 2. Create a new Checkout Session
     const session = await createStripeCheckoutSession({
       order,
       successUrl: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${process.env.CLIENT_URL}/payment/cancel?orderId=${order._id}`,
     });
 
-    // Save Stripe Checkout Session ID
+    // 3. Save the new Checkout Session ID
     order.stripeCheckoutSessionId = session.id;
     await order.save();
 

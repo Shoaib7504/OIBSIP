@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import apiRoutes from "./routes/index.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
+import stripeWebhookRoutes from "./routes/stripeWebhookRoutes.js";
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use(
 // Parse JSON for all other API requests
 app.use(express.json());
 
+app.use("/api/payments/webhook", stripeWebhookRoutes);
 app.get("/", (req, res) => {
   res.json({ message: "Pizza Delivery API" });
 });
