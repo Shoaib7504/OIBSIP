@@ -32,6 +32,13 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+// Stripe webhook requires the original raw request body
+app.use(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" })
+);
+
+// Parse JSON for all other API requests
 app.use(express.json());
 
 app.get("/", (req, res) => {
