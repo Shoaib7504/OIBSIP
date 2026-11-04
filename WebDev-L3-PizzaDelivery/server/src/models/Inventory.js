@@ -33,7 +33,10 @@ const inventorySchema = new mongoose.Schema(
             min: 0,
             default: 20,
         },
-
+        lowStockAlertSent: {
+            type: Boolean,
+            default: false,
+        },
         unit: {
             type: String,
             required: true,
