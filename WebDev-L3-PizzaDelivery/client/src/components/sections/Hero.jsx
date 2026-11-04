@@ -4,6 +4,8 @@ import { ArrowRight, Flame, Clock, Sparkles } from "lucide-react";
 import { Button } from "../common/Button";
 import { useCart } from "../../context/CartContext";
 import { PIZZA_IMAGES, heroMiniCards } from "../../data/pizzasData";
+import { usePizzas } from "../../hooks/usePizzas";
+import { normalizePizza } from "../../utils/pizzaUtils";
 import vegitableSvg from "../../assets/images/vegitable.svg";
 import {
   BasilIcon,
@@ -15,6 +17,8 @@ import {
 export const Hero = () => {
   const { setActivePizzaModal, setIsCustomizerOpen } = useCart();
   const shouldReduceMotion = useReducedMotion();
+  const { data } = usePizzas();
+  const backendPizzas = data?.data || [];
 
   return (
     <section
@@ -115,42 +119,70 @@ export const Hero = () => {
             role="region"
             aria-label="Popular Quick Picks"
           >
-            {heroMiniCards.map((mini) => (
-              <motion.button
-                key={mini.id}
-                type="button"
-                whileHover={shouldReduceMotion ? {} : { y: -4, scale: 1.03 }}
-                onClick={() =>
-                  setActivePizzaModal({
-                    id: mini.id,
-                    name: mini.name,
-                    price: parseFloat(mini.price.replace("$", "")),
-                    image: mini.image,
-                    description: `Crispy stone-baked ${mini.name} prepared fresh with authentic ingredients.`,
-                    rating: 4.8,
-                    reviews: 95,
-                    isVeg: mini.name === "Margherita",
-                  })
-                }
-                className="flex items-center gap-2.5 p-2 pr-4 bg-white/95 rounded-2xl border border-[#941508]/15 shadow-2xs hover:shadow-md hover:border-[#941508]/40 transition-all cursor-pointer backdrop-blur-xs min-h-[44px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508]"
-                aria-label={`Quick view ${mini.name} for ${mini.price}`}
-              >
-                <img
-                  src={mini.image}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-11 h-11 rounded-full object-cover shadow-inner border border-gray-100 shrink-0"
-                />
-                <div>
-                  <h3 className="text-xs font-bold text-[#351B17] leading-tight">
-                    {mini.name}
-                  </h3>
-                  <span className="text-[11px] font-extrabold text-[#941508]">
-                    {mini.price}
-                  </span>
-                </div>
-              </motion.button>
-            ))}
+            {heroMiniCards.map((mini) => {
+              const targetPizza = backendPizzas.find((p) => {
+                const pName = (p.name || "").toLowerCase();
+                const mName = mini.name.toLowerCase();
+                return pName.includes(mName) || mName.includes(pName);
+              });
+
+              return (
+                <motion.button
+                  key={mini.id}
+                  type="button"
+                  whileHover={shouldReduceMotion ? {} : { y: -4, scale: 1.03 }}
+                  onClick={() => {
+                    if (targetPizza) {
+                      setActivePizzaModal(normalizePizza(targetPizza));
+                    } else {
+                      const basePrice = parseFloat(mini.price.replace("$", ""));
+                      setActivePizzaModal({
+                        id: mini.id,
+                        name:
+                          mini.name === "Pepperoni"
+                            ? "Spicy Pepperoni"
+                            : mini.name === "Margherita"
+                            ? "Classic Margherita"
+                            : "BBQ Chicken Bliss",
+                        price: basePrice,
+                        prices: {
+                          small: basePrice,
+                          medium: Number((basePrice + 4).toFixed(2)),
+                          large: Number((basePrice + 8).toFixed(2)),
+                        },
+                        sizes: {
+                          small: basePrice,
+                          medium: Number((basePrice + 4).toFixed(2)),
+                          large: Number((basePrice + 8).toFixed(2)),
+                        },
+                        image: mini.image,
+                        description: `Crispy stone-baked ${mini.name} prepared fresh with authentic ingredients.`,
+                        rating: 4.8,
+                        reviews: 95,
+                        isVeg: mini.name === "Margherita",
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-2.5 p-2 pr-4 bg-white/95 rounded-2xl border border-[#941508]/15 shadow-2xs hover:shadow-md hover:border-[#941508]/40 transition-all cursor-pointer backdrop-blur-xs min-h-[44px] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508]"
+                  aria-label={`Quick view ${mini.name} for ${mini.price}`}
+                >
+                  <img
+                    src={mini.image}
+                    alt=""
+                    aria-hidden="true"
+                    className="w-11 h-11 rounded-full object-cover shadow-inner border border-gray-100 shrink-0"
+                  />
+                  <div>
+                    <h3 className="text-xs font-bold text-[#351B17] leading-tight">
+                      {mini.name}
+                    </h3>
+                    <span className="text-[11px] font-extrabold text-[#941508]">
+                      {mini.price}
+                    </span>
+                  </div>
+                </motion.button>
+              );
+            })}
           </motion.div>
         </div>
 

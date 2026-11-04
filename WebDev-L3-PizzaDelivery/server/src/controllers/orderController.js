@@ -200,9 +200,49 @@ export const createOrder = async (req, res, next) => {
               throw new Error(`Pizza not found: ${item.name || item.pizza}`);
             }
 
-            const size = (item.size || "medium").toLowerCase();
-            itemUnitPrice =
+            let size = (item.size || "medium").toLowerCase();
+            let itemUnitPrice =
               pizza.prices?.[size] ?? pizza.prices?.medium ?? pizza.price;
+
+            // If item.price was sent and differs from current size, resolve to matching valid size or candidate pizza
+            if (item.price && Math.abs(itemUnitPrice - Number(item.price)) > 0.05) {
+              let matched = false;
+
+              // 1. Check if price matches another size of this pizza
+              if (pizza.prices) {
+                for (const [s, p] of Object.entries(pizza.prices)) {
+                  if (Math.abs(p - Number(item.price)) <= 0.05) {
+                    size = s;
+                    itemUnitPrice = p;
+                    matched = true;
+                    break;
+                  }
+                }
+              }
+
+              // 2. Check candidate pizzas matching name keyword (e.g. Spicy Pepperoni vs Pepperoni Classic)
+              if (!matched) {
+                const keyword = cleanName.replace(/pizza/i, "").trim().split(" ")[0];
+                const candidates = await Pizza.find({
+                  name: { $regex: new RegExp(keyword, "i") },
+                }).session(session);
+
+                for (const candidate of candidates) {
+                  if (candidate.prices) {
+                    for (const [s, p] of Object.entries(candidate.prices)) {
+                      if (Math.abs(p - Number(item.price)) <= 0.05) {
+                        pizza = candidate;
+                        size = s;
+                        itemUnitPrice = p;
+                        matched = true;
+                        break;
+                      }
+                    }
+                  }
+                  if (matched) break;
+                }
+              }
+            }
 
             if (!itemUnitPrice) {
               throw new Error(`Invalid price for size ${size} of ${pizza.name}`);
