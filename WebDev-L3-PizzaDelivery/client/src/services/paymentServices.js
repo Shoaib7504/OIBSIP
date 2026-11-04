@@ -19,3 +19,4 @@ export const getSessionStatus = async (sessionId) => {
   const response = await api.get(`/api/payments/session-status/${sessionId}`);
   return response.data;
 };
+
