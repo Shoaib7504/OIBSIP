@@ -229,33 +229,35 @@ export function OrderInventoryProvider({ children }) {
   }, []);
 
   // Sync with Backend Orders 
-  const refreshOrders = useCallback(async () => {
-    if (!user) {
+
+const refreshOrders = useCallback(async () => {
+  if (!user) {
+    setOrders([]);
+    return;
+  }
+
+  try {
+    setIsSyncing(true);
+
+    // My Orders should always show only the logged-in user's orders
+    const res = await fetchMyBackendOrders();
+
+    if (res?.success && Array.isArray(res.data)) {
+      const normalized = res.data.map(normalizeBackendOrder);
+      setOrders(normalized);
+    } else {
       setOrders([]);
-      return;
     }
+  } catch (err) {
+    console.warn(
+      "[PizzaCrave] Backend orders sync failed:",
+      err.message
+    );
+  } finally {
+    setIsSyncing(false);
+  }
+}, [user?._id]);
 
-    try {
-      setIsSyncing(true);
-
-      const res =
-        user.role === "admin"
-          ? await fetchBackendOrders()
-          : await fetchMyBackendOrders();
-
-      if (res?.success && Array.isArray(res.data)) {
-        const normalized = res.data.map(normalizeBackendOrder);
-        setOrders(normalized);
-      }
-    } catch (err) {
-      console.warn(
-        "[PizzaCrave] Backend orders sync failed:",
-        err.message
-      );
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [user?._id, user?.role]);
   // Sync inventory with Backend
   const refreshInventory = useCallback(async () => {
     if (!user || user.role !== "admin") return;
