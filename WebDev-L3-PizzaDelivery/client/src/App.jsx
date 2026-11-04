@@ -29,6 +29,8 @@ import { AdminDashboard } from "./components/dashboard/AdminDashboard";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ForgotPassword } from "./pages/auth/ForgotPassword";
 import { ResetPassword } from "./pages/auth/ResetPassword";
+import { PaymentSuccess } from "./pages/payment/PaymentSuccess";
+import { PaymentCancel } from "./pages/payment/PaymentCancel";
 /**
  * Scroll to top or target hash on route transition
  */
@@ -116,6 +118,8 @@ function AppContent() {
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<UserDashboard />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
           </Route>
           <Route element={<ProtectedRoute adminOnly />}>
             <Route path="/admin" element={<AdminDashboard />} />

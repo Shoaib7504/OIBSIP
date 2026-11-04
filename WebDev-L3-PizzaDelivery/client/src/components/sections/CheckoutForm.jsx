@@ -41,7 +41,7 @@ export const CheckoutForm = ({
       city: user?.address?.city || "",
       postalCode: user?.address?.postalCode || "",
       deliveryNotes: "",
-      paymentMethod: "COD",
+      paymentMethod: "Stripe",
     },
   });
 
@@ -55,6 +55,13 @@ export const CheckoutForm = ({
 
   const paymentOptions = [
     {
+      id: "Stripe",
+      label: "Stripe Checkout",
+      description: "Credit / Debit Cards, Apple Pay & Google Pay",
+      icon: CreditCard,
+      badge: "Recommended",
+    },
+    {
       id: "COD",
       label: "Cash on Delivery",
       description: "Pay with cash at your door upon delivery",
@@ -63,10 +70,10 @@ export const CheckoutForm = ({
     },
     {
       id: "Card",
-      label: "Credit / Debit Card",
-      description: "Pay securely with Visa, MasterCard, or Amex",
+      label: "Credit / Debit Card (Offline)",
+      description: "Pay with physical card upon delivery",
       icon: CreditCard,
-      badge: "Fast & Secure",
+      badge: "POS",
     },
     {
       id: "UPI",
@@ -458,7 +465,11 @@ export const CheckoutForm = ({
           disabled={isSubmitting}
         >
           {isSubmitting
-            ? "Placing Order..."
+            ? selectedPayment === "Stripe"
+              ? "Redirecting to Stripe..."
+              : "Placing Order..."
+            : selectedPayment === "Stripe"
+            ? `Pay with Stripe ($${Number(totalAmount).toFixed(2)})`
             : totalAmount > 0
             ? `Place Order ($${Number(totalAmount).toFixed(2)})`
             : "Confirm & Place Order"}

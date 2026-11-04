@@ -1,4 +1,3 @@
-
 import Order from "../models/Order.js";
 import stripe from "../config/stripe.js";
 import { createStripeCheckoutSession } from "../services/stripeService.js";
@@ -105,6 +104,46 @@ export const createCheckoutSession = async (req, res, next) => {
       data: {
         sessionId: session.id,
         checkoutUrl: session.url,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSessionStatus = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Session ID is required",
+      });
+    }
+
+    const order = await Order.findOne({
+      stripeCheckoutSessionId: sessionId,
+      user: req.user._id,
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found for this checkout session",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        orderId: order._id,
+        paymentStatus: order.paymentStatus,
+        status: order.status,
+        totalAmount: order.totalAmount,
+        currency: order.currency,
+        paidAt: order.paidAt,
+        createdAt: order.createdAt,
       },
     });
   } catch (error) {

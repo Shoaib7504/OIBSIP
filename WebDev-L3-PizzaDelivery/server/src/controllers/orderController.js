@@ -105,6 +105,7 @@ export const createOrder = async (req, res, next) => {
             ...item,
             size: "medium",
             price: itemUnitPrice,
+            stockDeducted: 0,
           });
         } else {
           const cleanName = (item.name || "").trim();
@@ -170,6 +171,7 @@ export const createOrder = async (req, res, next) => {
               size: (item.size || "large").toLowerCase(),
               price: itemUnitPrice,
               pizza: pizza._id,
+              stockDeducted: requiredStock,
             });
           } else {
             // Regular Pizza: Resolve from DB and lookup price
@@ -236,6 +238,7 @@ export const createOrder = async (req, res, next) => {
               size,
               price: itemUnitPrice,
               pizza: pizza._id,
+              stockDeducted: quantity,
             });
           }
         }
@@ -265,7 +268,10 @@ export const createOrder = async (req, res, next) => {
             items: processedItems,
             inventoryDeductions,
             totalAmount: backendCalculatedTotal,
-            paymentMethod,
+            paymentMethod: ["COD", "Card", "UPI", "Stripe"].includes(paymentMethod)
+              ? paymentMethod
+              : "COD",
+            paymentStatus: "Pending",
           },
         ],
         { session }
@@ -338,17 +344,64 @@ export const getOrderById = async (req, res, next) => {
 };
 
 // Update order status
+// Admin can update order delivery status only
 export const updateOrderStatus = async (req, res, next) => {
   try {
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "Order status is required",
+      });
+    }
+
+    const allowedStatuses = [
+      "Placed",
+      "Preparing",
+      "Out for Delivery",
+      "Delivered",
+      "Cancelled",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order status",
+      });
+    }
+
+    // Payment status must never be changed through this endpoint
+    if (req.body.paymentStatus !== undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment status cannot be updated through this endpoint",
+      });
+    }
+
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      { status: req.body.status, paymentStatus: req.body.paymentStatus },
-      { new: true, runValidators: true }
+      { $set: { status } },
+      {
+        new: true,
+        runValidators: true,
+      }
     );
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
-    res.json({ success: true, data: order });
-  } catch (err) {
-    next(err);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      data: order,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -377,12 +430,13 @@ export const cancelMyOrder = async (req, res, next) => {
   try {
     session.startTransaction();
 
-    // 1. Atomically cancel an eligible order
+    // 1. Atomically cancel an eligible order (cannot cancel paid or delivered/cancelled orders)
     const order = await Order.findOneAndUpdate(
       {
         _id: req.params.id,
         user: req.user._id,
         status: { $nin: ["Delivered", "Cancelled"] },
+        paymentStatus: { $ne: "Completed" },
       },
       {
         $set: { status: "Cancelled" },
@@ -411,19 +465,31 @@ export const cancelMyOrder = async (req, res, next) => {
         });
       }
 
+      if (existingOrder.paymentStatus === "Completed") {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot cancel a paid order. Please contact customer support for refunds.",
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: `Cannot cancel an order with status: ${existingOrder.status}`,
       });
     }
 
-    // 3. Restore pizza stock
+    // 3. Restore pizza stock using actual deducted quantity
     for (const item of order.items) {
       if (item.pizza) {
+        const restoreQty =
+          typeof item.stockDeducted === "number" && item.stockDeducted > 0
+            ? item.stockDeducted
+            : item.quantity;
+
         const restoredPizza = await Pizza.findByIdAndUpdate(
           item.pizza,
           {
-            $inc: { stock: item.quantity },
+            $inc: { stock: restoreQty },
           },
           { session }
         );

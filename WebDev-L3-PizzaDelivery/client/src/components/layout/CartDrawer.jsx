@@ -21,6 +21,7 @@ import { useAuth } from "../../context/AuthContext";
 import { CheckoutForm } from "../sections/CheckoutForm";
 import { Button } from "../common/Button";
 import { useQueryClient } from "@tanstack/react-query";
+import { createCheckoutSession } from "../../services/paymentServices";
 
 export const CartDrawer = () => {
   const navigate = useNavigate();
@@ -78,6 +79,13 @@ export const CartDrawer = () => {
 
   const handleCheckoutSubmit = async (formData) => {
     try {
+      if (!user) {
+        showToast("Please log in to place an order", "error");
+        setIsCartOpen(false);
+        navigate("/login");
+        return;
+      }
+
       setIsSubmitting(true);
 
       // Construct payload according to backend Mongoose Order schema
@@ -111,12 +119,29 @@ export const CartDrawer = () => {
           };
         }),
         totalAmount: Number(total.toFixed(2)),
-        paymentMethod: formData.paymentMethod || "COD",
-        paymentStatus: formData.paymentMethod === "COD" ? "Pending" : "Completed",
+        paymentMethod: formData.paymentMethod || "Stripe",
       };
 
       // Send to Backend API and sync context
       const newOrder = await placeBackendOrder(orderPayload);
+      const orderId = newOrder?._id || newOrder?.id;
+
+      if (formData.paymentMethod === "Stripe") {
+        showToast("Order placed! Redirecting to Stripe...", "info");
+        // Clear shopping cart
+        clearCart();
+        queryClient.invalidateQueries({ queryKey: ["pizzas"] });
+
+        // Request Stripe Checkout Session from backend
+        const sessionRes = await createCheckoutSession(orderId);
+        if (sessionRes?.data?.checkoutUrl) {
+          window.location.href = sessionRes.data.checkoutUrl;
+          return;
+        } else {
+          throw new Error("Could not retrieve Stripe Checkout URL");
+        }
+      }
+
       setCreatedOrder(newOrder);
 
       // Trigger Celebration Confetti

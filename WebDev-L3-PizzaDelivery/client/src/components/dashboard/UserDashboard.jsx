@@ -22,11 +22,13 @@ import {
   XCircle,
   CalendarDays,
   RefreshCw,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "../common/Button";
 import { SectionHeader } from "../common/SectionHeader";
 import { useOrderInventory } from "../../context/OrderInventoryContext";
 import { useAuth } from "../../context/AuthContext";
+import { createCheckoutSession } from "../../services/paymentServices";
 
 //  Status helpers 
 const ORDER_STAGES = [
@@ -199,7 +201,7 @@ const VerticalConnectingLine = ({ completed }) => (
 );
 
 // Active Order Tracker Card 
-const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel }) => {
+const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel, onPayStripe }) => {
   const [itemsExpanded, setItemsExpanded] = useState(false);
   const currentIdx = statusToStageIndex(order.status);
   const pct = progressPercent(currentIdx);
@@ -212,6 +214,10 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel }) => {
     ? order.id
     : `ORD-${String(order.id || order._id).slice(-6).toUpperCase()}`;
 
+  const isStripePending =
+    order.paymentMethod === "Stripe" && order.paymentStatus === "Pending";
+  const isPaid = order.paymentStatus === "Completed";
+
   return (
     <motion.article
       initial={shouldReduceMotion ? {} : { opacity: 0, y: 24 }}
@@ -223,9 +229,25 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel }) => {
       {/* Header */}
       <div className="px-5 pt-5 pb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-base font-bold text-[#351B17] font-['Poppins',sans-serif]">
-            {displayId}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#351B17] font-['Poppins',sans-serif]">
+              {displayId}
+            </h3>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-[#7A5C55]">
+              {order.paymentMethod || "COD"}
+            </span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isPaid
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : order.paymentStatus === "Failed"
+                  ? "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-amber-50 text-amber-700 border border-amber-200"
+              }`}
+            >
+              {isPaid ? "Paid" : order.paymentStatus || "Pending"}
+            </span>
+          </div>
           <p className="text-xs text-[#7A5C55] flex items-center gap-1 mt-0.5">
             <Clock size={12} aria-hidden="true" />
             Placed {minsAgo} minute{minsAgo !== 1 ? "s" : ""} ago
@@ -326,18 +348,31 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel }) => {
 
       {/* Order Items Summary (collapsible) */}
       <div className="border-t border-[#F3E8C8]">
-        {/* Cancel Order Button */}
-        {onCancel && (
-          <div className="px-4 pt-4 flex justify-end hover:cursor-pointer ">
-            <Button
-              size="sm"
-              variant="outline"
-              icon={XCircle}
-              onClick={() => onCancel(order._id || order.id)}
-              className="!text-red-600 !border-red-200 hover:!bg-red-50"
-            >
-              Cancel Order
-            </Button>
+        {/* Actions (Pay Now & Cancel Order) */}
+        {(isStripePending || (onCancel && !isPaid)) && (
+          <div className="px-5 pt-4 flex flex-wrap items-center justify-between gap-2">
+            {isStripePending && onPayStripe ? (
+              <Button
+                size="sm"
+                variant="primary"
+                icon={CreditCard}
+                onClick={() => onPayStripe(order._id || order.id)}
+              >
+                Pay with Stripe ({formatCurrency(order.total)})
+              </Button>
+            ) : <div />}
+
+            {onCancel && !isPaid && (
+              <Button
+                size="sm"
+                variant="outline"
+                icon={XCircle}
+                onClick={() => onCancel(order._id || order.id)}
+                className="!text-red-600 !border-red-200 hover:!bg-red-50 ml-auto"
+              >
+                Cancel Order
+              </Button>
+            )}
           </div>
         )}
         <button
@@ -405,11 +440,14 @@ const ActiveOrderTracker = ({ order, shouldReduceMotion, onCancel }) => {
 };
 
 //  Order History Card 
-const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
+const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion, onPayStripe }) => {
   const isDelivered =
     order.status?.toLowerCase() === "delivered" ||
     order.status?.toLowerCase() === "completed";
   const isCancelled = order.status?.toLowerCase() === "cancelled";
+  const isStripePending =
+    order.paymentMethod === "Stripe" && order.paymentStatus === "Pending";
+  const isPaid = order.paymentStatus === "Completed";
 
   const displayId = String(order.id || order._id).startsWith("ORD-")
     ? order.id
@@ -435,17 +473,33 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
           )}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-[#351B17] font-['Poppins',sans-serif]">
-            {displayId}
-          </p>
-          <p className="text-[11px] text-[#7A5C55] flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-bold text-[#351B17] font-['Poppins',sans-serif]">
+              {displayId}
+            </p>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-[#7A5C55]">
+              {order.paymentMethod || "COD"}
+            </span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isPaid
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : order.paymentStatus === "Failed"
+                  ? "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-amber-50 text-amber-700 border border-amber-200"
+              }`}
+            >
+              {isPaid ? "Paid" : order.paymentStatus || "Pending"}
+            </span>
+          </div>
+          <p className="text-[11px] text-[#7A5C55] flex items-center gap-1 mt-0.5">
             <CalendarDays size={11} aria-hidden="true" />
             {formatDate(order.createdAt || order.date)}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-shrink-0">
         <span className="text-xs text-[#7A5C55]">
           {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? "s" : ""}
         </span>
@@ -460,6 +514,19 @@ const OrderHistoryCard = ({ order, onReorder, shouldReduceMotion }) => {
         >
           {isCancelled ? "Cancelled" : "Delivered"}
         </span>
+
+        {isStripePending && !isCancelled && onPayStripe && (
+          <Button
+            size="sm"
+            variant="primary"
+            icon={CreditCard}
+            onClick={() => onPayStripe(order._id || order.id)}
+            className="!min-h-[36px] !py-1 !text-xs"
+          >
+            Pay Now
+          </Button>
+        )}
+
         {isDelivered && onReorder && (
           <Button
             size="sm"
@@ -579,6 +646,23 @@ export const UserDashboard = () => {
     navigate("/#menu");
   };
 
+  // Pay with Stripe handler for pending orders
+  const handleStripePay = async (orderId) => {
+    try {
+      const res = await createCheckoutSession(orderId);
+      if (res?.data?.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl;
+      }
+    } catch (err) {
+      console.error("Pay now error:", err);
+      window.alert(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to initiate Stripe checkout. Please try again."
+      );
+    }
+  };
+
   // Empty state 
   if (!userOrders || userOrders.length === 0) {
     return (
@@ -671,6 +755,7 @@ export const UserDashboard = () => {
                 order={order}
                 shouldReduceMotion={shouldReduceMotion}
                 onCancel={handleCancelOrder}
+                onPayStripe={handleStripePay}
               />
             ))}
           </div>
@@ -692,6 +777,7 @@ export const UserDashboard = () => {
                   order={order}
                   onReorder={handleReorder}
                   shouldReduceMotion={shouldReduceMotion}
+                  onPayStripe={handleStripePay}
                 />
               ))}
             </div>

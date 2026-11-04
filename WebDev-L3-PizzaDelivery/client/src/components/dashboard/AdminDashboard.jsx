@@ -582,13 +582,33 @@ export const AdminDashboard = () => {
                                     {order.customerEmail && (
                                       <p className="text-[11px] text-[#7A5C55]">✉️ {order.customerEmail}</p>
                                     )}
-                                    <div className="pt-1 border-t border-gray-100 flex items-center justify-between text-[11px]">
-                                      <span className="font-bold text-[#941508]">
-                                        Payment: {order.paymentMethod || "COD"}
-                                      </span>
-                                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px]">
-                                        {order.paymentStatus || "Pending"}
-                                      </span>
+                                    <div className="pt-1.5 border-t border-gray-100 space-y-1">
+                                      <div className="flex items-center justify-between text-[11px]">
+                                        <span className="font-bold text-[#941508]">
+                                          Payment: {order.paymentMethod || "COD"}
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                                            order.paymentStatus === "Completed"
+                                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                              : order.paymentStatus === "Failed"
+                                              ? "bg-red-50 text-red-700 border border-red-200"
+                                              : "bg-amber-50 text-amber-700 border border-amber-200"
+                                          }`}
+                                        >
+                                          {order.paymentStatus || "Pending"}
+                                        </span>
+                                      </div>
+                                      {order.paidAt && (
+                                        <p className="text-[10px] text-gray-500">
+                                          Paid at: {new Date(order.paidAt).toLocaleString()}
+                                        </p>
+                                      )}
+                                      {order.stripePaymentIntentId && (
+                                        <p className="text-[10px] font-mono text-gray-400 truncate">
+                                          Intent: {order.stripePaymentIntentId}
+                                        </p>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
