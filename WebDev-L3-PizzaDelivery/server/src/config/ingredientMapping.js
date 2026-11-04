@@ -1,4 +1,3 @@
-
 export const INGREDIENT_MAPPING = {
   // Pizza Bases
   bases: {
@@ -6,6 +5,7 @@ export const INGREDIENT_MAPPING = {
     thin: "Thin & Crispy",
     "cheese-burst": "Cheese Burst",
     "gluten-free": "Gluten-Free",
+    "pan-crust": "Classic Pan Crust",
   },
 
   // Sauces
@@ -14,6 +14,7 @@ export const INGREDIENT_MAPPING = {
     arrabiata: "Spicy Arrabbiata",
     garlic: "Creamy Garlic White Sauce",
     bbq: "Smoky Texas BBQ",
+    pesto: "Genovese Basil Pesto",
   },
 
   // Cheeses
@@ -66,4 +67,38 @@ export const INGREDIENT_CONSUMPTION = {
   sauce: 0.1,
   cheese: 0.15,
   topping: 0.05,
+};
+
+// Custom pizza pricing for backend price validation
+export const CUSTOM_PIZZA_PRICING = {
+  basePrice: 10.99,
+  crusts: {
+    sourdough: 0,
+    thin: 0,
+    "cheese-burst": 2.50,
+    "gluten-free": 2.00,
+    "pan-crust": 1.50,
+  },
+  sauces: {
+    marinara: 0,
+    arrabiata: 0.50,
+    garlic: 0.75,
+    bbq: 0.75,
+    pesto: 1.00,
+  },
+  cheeses: {
+    standard: 0,
+    double: 1.50,
+    vegan: 1.25,
+  },
+  toppings: {
+    pepperoni: 1.50,
+    chicken: 1.75,
+    mushrooms: 1.00,
+    olives: 0.90,
+    corn: 0.80,
+    jalapeno: 0.80,
+    paneer: 1.50,
+    basil: 0.50,
+  },
 };

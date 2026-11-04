@@ -11,6 +11,7 @@ const CRUST_OPTIONS = [
   { id: "thin", name: "Thin & Crispy", price: 0, desc: "Light cracker-like crunch" },
   { id: "cheese-burst", name: "Cheese Burst", price: 2.50, desc: "Crust filled with warm molten mozzarella" },
   { id: "gluten-free", name: "Gluten-Free Cauliflower", price: 2.00, desc: "Healthy 100% gluten-free option" },
+  { id: "pan-crust", name: "Classic Pan Crust", price: 1.50, desc: "Golden thick crust with crispy buttery edges" },
 ];
 
 const SAUCE_OPTIONS = [
@@ -18,6 +19,7 @@ const SAUCE_OPTIONS = [
   { id: "arrabiata", name: "Spicy Arrabiata", price: 0.50, color: "#941508" },
   { id: "garlic", name: "Creamy Garlic White Sauce", price: 0.75, color: "#FFF0B8" },
   { id: "bbq", name: "Smoky Texas BBQ", price: 0.75, color: "#7A3515" },
+  { id: "pesto", name: "Genovese Basil Pesto", price: 1.00, color: "#2E7D32" },
 ];
 
 const CHEESE_OPTIONS = [

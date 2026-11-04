@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Pizza from "../models/Pizza.js";
 import Inventory from "../models/Inventory.js";
+import { CUSTOM_PIZZA_PRICING } from "../config/ingredientMapping.js";
 
 import {
   calculateIngredientRequirements,
@@ -50,8 +51,9 @@ export const createOrder = async (req, res, next) => {
         session
       );
 
-      // 4. Resolve pizzas and deduct pizza stock atomically
+      // 4. Resolve pizzas, calculate backend prices, and deduct pizza stock atomically
       const processedItems = [];
+      let backendCalculatedSubtotal = 0;
 
       for (const item of items) {
         const quantity = Number(item.quantity);
@@ -60,27 +62,85 @@ export const createOrder = async (req, res, next) => {
           throw new Error("Invalid pizza quantity");
         }
 
+        let itemUnitPrice = 0;
         let pizza = null;
 
-        if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
-          pizza = await Pizza.findById(item.pizza).session(session);
-        }
+        if (item.customOptions) {
+          // Custom Pizza: Calculate price strictly from backend configuration
+          const crustId = item.customOptions.crust;
+          const sauceId = item.customOptions.sauce;
+          const cheeseId = item.customOptions.cheese;
+          const toppings = item.customOptions.toppings || [];
 
-        if (!pizza && item.name && !item.customOptions) {
-          const cleanName = item.name.trim();
+          const crustCost = CUSTOM_PIZZA_PRICING.crusts[crustId];
+          const sauceCost = CUSTOM_PIZZA_PRICING.sauces[sauceId];
+          const cheeseCost = CUSTOM_PIZZA_PRICING.cheeses[cheeseId];
 
-          pizza =
-            (await Pizza.findOne({
-              name: { $regex: new RegExp(`^${cleanName}$`, "i") },
-            }).session(session)) ||
-            (await Pizza.findOne({
-              name: {
-                $regex: new RegExp(cleanName.split(" ")[0], "i"),
-              },
-            }).session(session));
-        }
+          if (crustCost === undefined || sauceCost === undefined || cheeseCost === undefined) {
+            throw new Error("Invalid custom pizza options selected");
+          }
 
-        if (pizza) {
+          let toppingsCost = 0;
+          for (const tId of toppings) {
+            const tCost = CUSTOM_PIZZA_PRICING.toppings[tId];
+            if (tCost === undefined) {
+              throw new Error(`Invalid topping selected: ${tId}`);
+            }
+            toppingsCost += tCost;
+          }
+
+          itemUnitPrice = Number(
+            (
+              CUSTOM_PIZZA_PRICING.basePrice +
+              crustCost +
+              sauceCost +
+              cheeseCost +
+              toppingsCost
+            ).toFixed(2)
+          );
+
+          backendCalculatedSubtotal += itemUnitPrice * quantity;
+
+          processedItems.push({
+            ...item,
+            size: "medium",
+            price: itemUnitPrice,
+          });
+        } else {
+          // Regular Pizza: Resolve from DB and lookup price
+          if (item.pizza && mongoose.Types.ObjectId.isValid(item.pizza)) {
+            pizza = await Pizza.findById(item.pizza).session(session);
+          }
+
+          if (!pizza && item.name) {
+            const cleanName = item.name.trim();
+
+            pizza =
+              (await Pizza.findOne({
+                name: { $regex: new RegExp(`^${cleanName}$`, "i") },
+              }).session(session)) ||
+              (await Pizza.findOne({
+                name: {
+                  $regex: new RegExp(cleanName.split(" ")[0], "i"),
+                },
+              }).session(session));
+          }
+
+          if (!pizza) {
+            throw new Error(`Pizza not found: ${item.name || item.pizza}`);
+          }
+
+          const size = (item.size || "medium").toLowerCase();
+          itemUnitPrice =
+            pizza.prices?.[size] ?? pizza.prices?.medium ?? pizza.price;
+
+          if (!itemUnitPrice) {
+            throw new Error(`Invalid price for size ${size} of ${pizza.name}`);
+          }
+
+          itemUnitPrice = Number(itemUnitPrice);
+          backendCalculatedSubtotal += itemUnitPrice * quantity;
+
           const updatedPizza = await Pizza.findOneAndUpdate(
             {
               _id: pizza._id,
@@ -105,18 +165,29 @@ export const createOrder = async (req, res, next) => {
 
           processedItems.push({
             ...item,
-            size: (item.size || "medium").toLowerCase(),
+            size,
+            price: itemUnitPrice,
             pizza: pizza._id,
-          });
-        } else {
-          processedItems.push({
-            ...item,
-            size: (item.size || "medium").toLowerCase(),
           });
         }
       }
 
-      // 5. Create order inside the same transaction
+      // 5. Backend Price Validation (Delivery fee + 8% tax)
+      const backendDeliveryFee =
+        backendCalculatedSubtotal > 30 || backendCalculatedSubtotal === 0 ? 0 : 2.99;
+      const backendTax = Number((backendCalculatedSubtotal * 0.08).toFixed(2));
+      const backendCalculatedTotal = Number(
+        (backendCalculatedSubtotal + backendDeliveryFee + backendTax).toFixed(2)
+      );
+
+      // Validate frontend total amount against backend calculation (tolerance $0.15 for float rounding)
+      if (Math.abs(Number(totalAmount) - backendCalculatedTotal) > 0.15) {
+        throw new Error(
+          `Price validation failed: Server computed total $${backendCalculatedTotal}, but received $${totalAmount}`
+        );
+      }
+
+      // 6. Create order inside the same transaction with validated total
       const [order] = await Order.create(
         [
           {
@@ -124,7 +195,7 @@ export const createOrder = async (req, res, next) => {
             customer,
             items: processedItems,
             inventoryDeductions,
-            totalAmount,
+            totalAmount: backendCalculatedTotal,
             paymentMethod,
           },
         ],
@@ -144,7 +215,8 @@ export const createOrder = async (req, res, next) => {
       err.message.includes("out of stock") ||
       err.message.includes("Invalid") ||
       err.message.includes("not found") ||
-      err.message.includes("Custom pizza")
+      err.message.includes("Custom pizza") ||
+      err.message.includes("Price validation")
     ) {
       return res.status(400).json({
         success: false,

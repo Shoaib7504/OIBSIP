@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import connectDB from "../config/db.js";
@@ -7,7 +6,7 @@ import Inventory from "../models/Inventory.js";
 dotenv.config();
 
 const inventoryItems = [
-  // Pizza Bases
+  // Pizza Bases (5 Bases)
   {
     name: "Sourdough Regular",
     category: "Pizza Bases",
@@ -36,8 +35,15 @@ const inventoryItems = [
     threshold: 15,
     unit: "units",
   },
+  {
+    name: "Classic Pan Crust",
+    category: "Pizza Bases",
+    stock: 75,
+    threshold: 15,
+    unit: "units",
+  },
 
-  // Sauces
+  // Sauces (5 Sauces)
   {
     name: "San Marzano Marinara",
     category: "Sauces",
@@ -64,6 +70,13 @@ const inventoryItems = [
     category: "Sauces",
     stock: 55,
     threshold: 15,
+    unit: "liters",
+  },
+  {
+    name: "Genovese Basil Pesto",
+    category: "Sauces",
+    stock: 40,
+    threshold: 10,
     unit: "liters",
   },
 
