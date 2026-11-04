@@ -464,22 +464,49 @@ export const getMyOrders = async (req, res, next) => {
 
 
 //Cancel customer's own order
+// Cancel customer's own unpaid order and restore inventory
+
 export const cancelMyOrder = async (req, res, next) => {
   const session = await Order.db.startSession();
 
   try {
     session.startTransaction();
 
-    // 1. Atomically cancel an eligible order (cannot cancel paid or delivered/cancelled orders)
+    const orderId = req.params.id;
+    const userId = req.user?._id?.toString();
+
+    // 1. Validate order ID
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      await session.abortTransaction();
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order ID",
+      });
+    }
+
+    // 2. Verify authentication
+    if (!userId) {
+      await session.abortTransaction();
+
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    // 3. Find and atomically cancel the customer's eligible order
     const order = await Order.findOneAndUpdate(
       {
-        _id: req.params.id,
-        user: req.user._id,
+        _id: orderId,
+        user: userId,
         status: { $nin: ["Delivered", "Cancelled"] },
         paymentStatus: { $ne: "Completed" },
       },
       {
-        $set: { status: "Cancelled" },
+        $set: {
+          status: "Cancelled",
+        },
       },
       {
         new: true,
@@ -487,28 +514,33 @@ export const cancelMyOrder = async (req, res, next) => {
       }
     );
 
-    // 2. Check why cancellation failed
+    // 4. Handle cancellation failure
     if (!order) {
-      const existingOrder = await Order.findById(req.params.id).session(
-        session
-      );
+      const existingOrder = await Order.findById(orderId).session(session);
 
       await session.abortTransaction();
 
-      if (
-        !existingOrder ||
-        existingOrder.user?.toString() !== req.user._id.toString()
-      ) {
+      if (!existingOrder) {
         return res.status(404).json({
           success: false,
-          message: "Order not found or you are not authorized",
+          message: "Order not found",
         });
       }
 
+      // Verify order ownership
+      if (existingOrder.user?.toString() !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not authorized to cancel this order",
+        });
+      }
+
+      // Prevent cancellation of paid orders
       if (existingOrder.paymentStatus === "Completed") {
         return res.status(400).json({
           success: false,
-          message: "Cannot cancel a paid order. Please contact customer support for refunds.",
+          message:
+            "Cannot cancel a paid order. Please contact customer support for refunds.",
         });
       }
 
@@ -518,36 +550,49 @@ export const cancelMyOrder = async (req, res, next) => {
       });
     }
 
-    // 3. Restore pizza stock using actual deducted quantity
+    // 5. Restore deducted pizza stock
     for (const item of order.items) {
-      if (item.pizza) {
-        const restoreQty =
-          typeof item.stockDeducted === "number" && item.stockDeducted > 0
-            ? item.stockDeducted
-            : item.quantity;
+      if (!item.pizza) continue;
 
-        const restoredPizza = await Pizza.findByIdAndUpdate(
-          item.pizza,
-          {
-            $inc: { stock: restoreQty },
+      const restoreQty =
+        typeof item.stockDeducted === "number" &&
+        item.stockDeducted > 0
+          ? item.stockDeducted
+          : item.quantity;
+
+      const restoredPizza = await Pizza.findByIdAndUpdate(
+        item.pizza,
+        {
+          $inc: {
+            stock: restoreQty,
           },
-          { session }
-        );
-
-        if (!restoredPizza) {
-          throw new Error(`Pizza not found while restoring: ${item.name}`);
+        },
+        {
+          new: true,
+          session,
         }
+      );
+
+      if (!restoredPizza) {
+        throw new Error(
+          `Pizza not found while restoring: ${item.name}`
+        );
       }
     }
 
-    // 4. Restore custom pizza ingredients
+    // 6. Restore custom pizza ingredients
     for (const deduction of order.inventoryDeductions || []) {
       const restoredIngredient = await Inventory.findByIdAndUpdate(
         deduction.inventory,
         {
-          $inc: { stock: deduction.quantity },
+          $inc: {
+            stock: deduction.quantity,
+          },
         },
-        { session }
+        {
+          new: true,
+          session,
+        }
       );
 
       if (!restoredIngredient) {
@@ -557,20 +602,22 @@ export const cancelMyOrder = async (req, res, next) => {
       }
     }
 
-    // 5. Commit all changes
+    // 7. Commit transaction
     await session.commitTransaction();
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Order cancelled and inventory restored successfully",
       data: order,
     });
-  } catch (err) {
+
+  } catch (error) {
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
 
-    next(err);
+    next(error);
+
   } finally {
     await session.endSession();
   }

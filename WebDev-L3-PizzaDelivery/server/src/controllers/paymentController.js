@@ -76,7 +76,7 @@ export const createCheckoutSession = async (req, res, next) => {
         });
       }
 
-      // A completed session must be verified through the webhook
+      // A completed session must be verified through the webhook or session status
       if (existingSession.status === "complete") {
         return res.status(409).json({
           success: false,
@@ -122,9 +122,9 @@ export const getSessionStatus = async (req, res, next) => {
       });
     }
 
+    // Find order by Stripe Checkout Session ID
     const order = await Order.findOne({
       stripeCheckoutSessionId: sessionId,
-      user: req.user._id,
     });
 
     if (!order) {
@@ -132,6 +132,47 @@ export const getSessionStatus = async (req, res, next) => {
         success: false,
         message: "Order not found for this checkout session",
       });
+    }
+
+    // Authorization: Owner, Admin, or matching customer email can view payment status
+    const isOwner =
+      order.user && req.user && order.user.toString() === req.user._id.toString();
+    const isAdmin = req.user?.role === "admin";
+    const isMatchingEmail =
+      order.customer?.email &&
+      req.user?.email &&
+      order.customer.email.toLowerCase() === req.user.email.toLowerCase();
+
+    if (!isOwner && !isAdmin && !isMatchingEmail) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view payment status for this session",
+      });
+    }
+
+    // Resilient fallback: If still Pending, verify payment directly with Stripe
+    if (order.paymentStatus === "Pending") {
+      try {
+        const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
+        const expectedAmount = Math.round(order.totalAmount * 100);
+
+        if (
+          stripeSession.payment_status === "paid" &&
+          stripeSession.currency === "usd" &&
+          stripeSession.amount_total === expectedAmount
+        ) {
+          order.paymentStatus = "Completed";
+          order.stripePaymentIntentId =
+            typeof stripeSession.payment_intent === "string"
+              ? stripeSession.payment_intent
+              : stripeSession.payment_intent?.id || null;
+          order.paidAt = new Date();
+          await order.save();
+          console.log(`Stripe payment verified via session retrieval for order: ${order._id}`);
+        }
+      } catch (stripeErr) {
+        console.warn("Could not retrieve session from Stripe:", stripeErr.message);
+      }
     }
 
     return res.status(200).json({

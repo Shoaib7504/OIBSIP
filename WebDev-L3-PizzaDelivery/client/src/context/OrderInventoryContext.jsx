@@ -388,131 +388,140 @@ export function OrderInventoryProvider({ children }) {
     async (orderId) => {
       try {
         const res = await cancelBackendOrderApi(orderId);
+
         if (!res?.success) {
-          throw new Error(res?.message || "Failed to cancel order")
+          throw new Error(
+            res?.message || "Failed to cancel order"
+          );
         }
-        await refreshOrders()
+
+        await refreshOrders();
+
         return {
-          success: true
-        }
+          success: true,
+        };
       } catch (error) {
-        console.error("[PizzaCrave] Order cancellation failed:", err);
+        console.error(
+          "[PizzaCrave] Order cancellation failed:",
+          error
+        );
+
+        return {
+          success: false,
+          message:
+            error.response?.data?.message ||
+            error.message ||
+            "Failed to cancel order",
+        };
+      }
+    },
+    [refreshOrders]
+  );
+
+  //  Manual Inventory Controls 
+  const updateStock = useCallback(
+    async (itemId, newStock) => {
+      try {
+        const stock = Math.max(
+          0,
+          Math.round(newStock * 10) / 10
+        );
+
+        const res = await updateBackendInventory(itemId, {
+          stock,
+        });
+
+        if (!res?.success || !res?.data) {
+          throw new Error(
+            res?.message || "Failed to update inventory"
+          );
+        }
+
+        const updatedItem = {
+          ...res.data,
+          id: res.data._id,
+        };
+
+        setInventory((prev) => {
+          const updated = prev.map((item) =>
+            item.id === itemId ? updatedItem : item
+          );
+
+          broadcast("INVENTORY_UPDATE", updated);
+          return updated;
+        });
+
+        return { success: true };
+      } catch (err) {
+        console.error("[PizzaCrave] Stock update failed:", err);
 
         return {
           success: false,
           message:
             err.response?.data?.message ||
             err.message ||
-            "Failed to cancel order",
+            "Failed to update stock",
         };
       }
-    }
+    },
+    [broadcast]
   );
-
-  //  Manual Inventory Controls 
- const updateStock = useCallback(
-  async (itemId, newStock) => {
-    try {
-      const stock = Math.max(
-        0,
-        Math.round(newStock * 10) / 10
-      );
-
-      const res = await updateBackendInventory(itemId, {
-        stock,
-      });
-
-      if (!res?.success || !res?.data) {
-        throw new Error(
-          res?.message || "Failed to update inventory"
-        );
-      }
-
-      const updatedItem = {
-        ...res.data,
-        id: res.data._id,
-      };
-
-      setInventory((prev) => {
-        const updated = prev.map((item) =>
-          item.id === itemId ? updatedItem : item
+  const restockItem = useCallback(
+    async (itemId, addAmount) => {
+      try {
+        const item = inventory.find(
+          (item) => item.id === itemId
         );
 
-        broadcast("INVENTORY_UPDATE", updated);
-        return updated;
-      });
+        if (!item) {
+          throw new Error("Inventory item not found");
+        }
 
-      return { success: true };
-    } catch (err) {
-      console.error("[PizzaCrave] Stock update failed:", err);
+        const amount = Math.max(0, Number(addAmount));
 
-      return {
-        success: false,
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to update stock",
-      };
-    }
-  },
-  [broadcast]
-);
-const restockItem = useCallback(
-  async (itemId, addAmount) => {
-    try {
-      const item = inventory.find(
-        (item) => item.id === itemId
-      );
+        if (!Number.isFinite(amount) || amount <= 0) {
+          throw new Error("Restock amount must be greater than 0");
+        }
 
-      if (!item) {
-        throw new Error("Inventory item not found");
+        const res = await updateBackendInventory(itemId, {
+          stock: item.stock + amount,
+        });
+
+        if (!res?.success || !res?.data) {
+          throw new Error(
+            res?.message || "Failed to restock item"
+          );
+        }
+
+        const updatedItem = {
+          ...res.data,
+          id: res.data._id,
+        };
+
+        setInventory((prev) => {
+          const updated = prev.map((item) =>
+            item.id === itemId ? updatedItem : item
+          );
+
+          broadcast("INVENTORY_UPDATE", updated);
+          return updated;
+        });
+
+        return { success: true };
+      } catch (err) {
+        console.error("[PizzaCrave] Restock failed:", err);
+
+        return {
+          success: false,
+          message:
+            err.response?.data?.message ||
+            err.message ||
+            "Failed to restock item",
+        };
       }
-
-      const amount = Math.max(0, Number(addAmount));
-
-      if (!Number.isFinite(amount) || amount <= 0) {
-        throw new Error("Restock amount must be greater than 0");
-      }
-
-      const res = await updateBackendInventory(itemId, {
-        stock: item.stock + amount,
-      });
-
-      if (!res?.success || !res?.data) {
-        throw new Error(
-          res?.message || "Failed to restock item"
-        );
-      }
-
-      const updatedItem = {
-        ...res.data,
-        id: res.data._id,
-      };
-
-      setInventory((prev) => {
-        const updated = prev.map((item) =>
-          item.id === itemId ? updatedItem : item
-        );
-
-        broadcast("INVENTORY_UPDATE", updated);
-        return updated;
-      });
-
-      return { success: true };
-    } catch (err) {
-      console.error("[PizzaCrave] Restock failed:", err);
-
-      return {
-        success: false,
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to restock item",
-      };
-    }
-  },
-  [inventory, broadcast]
-);
+    },
+    [inventory, broadcast]
+  );
 
   const resetInventoryItem = useCallback(
     (itemId) => {
@@ -529,56 +538,56 @@ const restockItem = useCallback(
     [broadcast]
   );
 
-const updateThreshold = useCallback(
-  async (itemId, newThreshold) => {
-    try {
-      const threshold = Math.max(
-        1,
-        Math.round(newThreshold)
-      );
-
-      const res = await updateBackendInventory(itemId, {
-        threshold,
-      });
-
-      if (!res?.success || !res?.data) {
-        throw new Error(
-          res?.message || "Failed to update threshold"
+  const updateThreshold = useCallback(
+    async (itemId, newThreshold) => {
+      try {
+        const threshold = Math.max(
+          1,
+          Math.round(newThreshold)
         );
+
+        const res = await updateBackendInventory(itemId, {
+          threshold,
+        });
+
+        if (!res?.success || !res?.data) {
+          throw new Error(
+            res?.message || "Failed to update threshold"
+          );
+        }
+
+        const updatedItem = {
+          ...res.data,
+          id: res.data._id,
+        };
+
+        setInventory((prev) => {
+          const updated = prev.map((item) =>
+            item.id === itemId ? updatedItem : item
+          );
+
+          broadcast("INVENTORY_UPDATE", updated);
+          return updated;
+        });
+
+        return { success: true };
+      } catch (err) {
+        console.error(
+          "[PizzaCrave] Threshold update failed:",
+          err
+        );
+
+        return {
+          success: false,
+          message:
+            err.response?.data?.message ||
+            err.message ||
+            "Failed to update threshold",
+        };
       }
-
-      const updatedItem = {
-        ...res.data,
-        id: res.data._id,
-      };
-
-      setInventory((prev) => {
-        const updated = prev.map((item) =>
-          item.id === itemId ? updatedItem : item
-        );
-
-        broadcast("INVENTORY_UPDATE", updated);
-        return updated;
-      });
-
-      return { success: true };
-    } catch (err) {
-      console.error(
-        "[PizzaCrave] Threshold update failed:",
-        err
-      );
-
-      return {
-        success: false,
-        message:
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to update threshold",
-      };
-    }
-  },
-  [broadcast]
-);
+    },
+    [broadcast]
+  );
 
   const getLowStockItems = useCallback(() => {
     return inventory.filter((item) => item.stock <= item.threshold);
