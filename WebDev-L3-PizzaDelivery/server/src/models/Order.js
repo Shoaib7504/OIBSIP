@@ -67,13 +67,33 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["COD", "Card", "UPI"],
+      enum: ["COD", "Card", "UPI", "Stripe"],
       default: "COD",
     },
     paymentStatus: {
       type: String,
       enum: ["Pending", "Completed", "Failed"],
       default: "Pending",
+    },
+    currency: {
+      type: String,
+      enum: ["USD"],
+      default: "USD",
+    },
+
+    stripeCheckoutSessionId: {
+      type: String,
+      default: null,
+    },
+
+    stripePaymentIntentId: {
+      type: String,
+      default: null,
+    },
+
+    paidAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

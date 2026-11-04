@@ -1,4 +1,3 @@
-
 import stripe from "../config/stripe.js";
 
 export const createStripeCheckoutSession = async ({
