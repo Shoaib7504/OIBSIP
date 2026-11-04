@@ -1,4 +1,3 @@
-
 import stripe from "../config/stripe.js";
 
 export const createStripeCheckoutSession = async ({
@@ -31,7 +30,7 @@ export const createStripeCheckoutSession = async ({
   const session = await stripe.checkout.sessions.create(
     {
       mode: "payment",
-      payment_method_types: ["card"],
+      customer_email: order.customer?.email || undefined,
       line_items: [
         {
           price_data: {
