@@ -25,7 +25,6 @@ export const sendLowStockAlerts = async () => {
   });
 
   if (lowStockItems.length === 0) {
-    console.log("No new low-stock alerts.");
     return;
   }
 
@@ -34,7 +33,6 @@ export const sendLowStockAlerts = async () => {
   }).select("email");
 
   if (admins.length === 0) {
-    console.log("No admin accounts found.");
     return;
   }
 
@@ -72,7 +70,5 @@ export const sendLowStockAlerts = async () => {
     }
   );
 
-  console.log(
-    `Low-stock alert sent for ${lowStockItems.length} item(s).`
-  );
+  console.log(`Low-stock alert email sent for ${lowStockItems.length} item(s).`);
 };

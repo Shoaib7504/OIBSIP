@@ -495,14 +495,20 @@ export const cancelMyOrder = async (req, res, next) => {
       });
     }
 
-    // 3. Find and atomically cancel the customer's eligible order
+    // 3. Find and atomically cancel the eligible order
+    const isAdmin = req.user?.role === "admin";
+    const cancelFilter = {
+      _id: orderId,
+      status: { $nin: ["Delivered", "Cancelled"] },
+      paymentStatus: { $ne: "Completed" },
+    };
+
+    if (!isAdmin) {
+      cancelFilter.user = userId;
+    }
+
     const order = await Order.findOneAndUpdate(
-      {
-        _id: orderId,
-        user: userId,
-        status: { $nin: ["Delivered", "Cancelled"] },
-        paymentStatus: { $ne: "Completed" },
-      },
+      cancelFilter,
       {
         $set: {
           status: "Cancelled",
@@ -527,8 +533,8 @@ export const cancelMyOrder = async (req, res, next) => {
         });
       }
 
-      // Verify order ownership
-      if (existingOrder.user?.toString() !== userId) {
+      // Verify order ownership for non-admin users
+      if (!isAdmin && existingOrder.user?.toString() !== userId) {
         return res.status(403).json({
           success: false,
           message: "You are not authorized to cancel this order",

@@ -2,16 +2,12 @@ import cron from "node-cron";
 import { sendLowStockAlerts } from "../services/lowStockEmailService.js";
 
 export const startCronJobs = () => {
-  // Run every 5 minutes
+  // Run every 5 minutes in background
   cron.schedule("*/5 * * * *", async () => {
-    console.log("Running low-stock inventory check...");
-
     try {
       await sendLowStockAlerts();
     } catch (error) {
-      console.error("Low-stock cron job failed:", error);
+      console.error("Low-stock cron job error:", error.message || error);
     }
   });
-
-  console.log("Low-stock cron job scheduled successfully.");
 };

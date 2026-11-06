@@ -1,7 +1,15 @@
 import axios from "axios";
 
+// Normalize server URL and trim any trailing slashes
+const rawBaseURL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_SERVER_URL ||
+  "http://localhost:5000";
+
+const baseURL = rawBaseURL.replace(/\/+$/, "");
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },

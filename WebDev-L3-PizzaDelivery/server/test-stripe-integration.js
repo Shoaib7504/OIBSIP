@@ -1,6 +1,9 @@
 import dns from "node:dns";
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 import "dotenv/config";
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+  process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_secret_for_integration_testing_only";
+}
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import Order from "./src/models/Order.js";

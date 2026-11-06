@@ -10,10 +10,15 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    await verifyEmailConnection();
+    // Verify email service asynchronously without blocking startup
+    verifyEmailConnection().catch((err) => {
+      console.warn("Email service verification warning:", err.message || err);
+    });
 
-   startCronJobs();
-  
+    // Start background inventory check cron jobs in persistent server mode
+    if (process.env.NODE_ENV !== "test") {
+      startCronJobs();
+    }
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
@@ -25,3 +30,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+export default app;

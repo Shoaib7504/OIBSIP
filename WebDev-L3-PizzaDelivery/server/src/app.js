@@ -3,6 +3,7 @@ import cors from "cors";
 import apiRoutes from "./routes/index.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 import stripeWebhookRoutes from "./routes/stripeWebhookRoutes.js";
+import connectDB from "./config/db.js";
 
 const app = express();
 
@@ -33,6 +34,17 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Ensure database connection is active before processing requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Stripe webhook requires the original raw request body
 app.use(
   "/api/payments/webhook",
@@ -43,8 +55,13 @@ app.use(
 app.use(express.json());
 
 app.use("/api/payments/webhook", stripeWebhookRoutes);
+
 app.get("/", (req, res) => {
-  res.json({ message: "Pizza Delivery API" });
+  res.json({
+    status: "online",
+    message: "Pizza Delivery API is running",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.use("/api", apiRoutes);
