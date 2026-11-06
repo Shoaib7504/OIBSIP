@@ -160,6 +160,77 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
+// Google OAuth Login & Registration
+// POST /api/users/google-auth
+export const googleAuth = async (req, res, next) => {
+  try {
+    const { name, email, googleId, photoURL } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required for Google authentication",
+      });
+    }
+
+    const normalizeEmail = email.trim().toLowerCase();
+
+    // Check if user already exists
+    let user = await User.findOne({ email: normalizeEmail });
+
+    if (user) {
+      // If user exists, link Google ID and verify email
+      let updated = false;
+      if (!user.googleId && googleId) {
+        user.googleId = googleId;
+        updated = true;
+      }
+      if (!user.isEmailVerified) {
+        user.isEmailVerified = true;
+        updated = true;
+      }
+      if (photoURL && !user.photoURL) {
+        user.photoURL = photoURL;
+        updated = true;
+      }
+      if (updated) {
+        await user.save();
+      }
+    } else {
+      // Create new user authenticated via Google
+      user = await User.create({
+        name: name?.trim() || "Google User",
+        email: normalizeEmail,
+        googleId: googleId || null,
+        photoURL: photoURL || "",
+        authProvider: "google",
+        isEmailVerified: true,
+        role: "user",
+      });
+    }
+
+    const token = generateToken(user._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Google authentication successful",
+      token,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || "",
+        address: user.address || {},
+        role: user.role,
+        isAdmin: user.role === "admin",
+        photoURL: user.photoURL || photoURL || "",
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get user profile by ID or current logged-in user
 //   GET /api/users/profile or GET /api/users/:id
 export const getUserProfile = async (req, res, next) => {

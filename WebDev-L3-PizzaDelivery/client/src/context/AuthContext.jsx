@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getUserProfile } from "../services/authServices";
+import { getUserProfile, googleLoginUser } from "../services/authServices";
+import { signInWithGoogle } from "../config/firebase";
 
 const AuthContext = createContext(null);
 
@@ -51,6 +52,27 @@ export const AuthProvider = ({ children }) => {
     setToken(authToken);
   };
 
+  // Sign in or register with Google via Firebase
+  const loginWithGoogle = async () => {
+    const firebaseUser = await signInWithGoogle();
+    const idToken = await firebaseUser.getIdToken();
+
+    const response = await googleLoginUser({
+      name: firebaseUser.displayName || "",
+      email: firebaseUser.email,
+      googleId: firebaseUser.uid,
+      photoURL: firebaseUser.photoURL || "",
+      idToken,
+    });
+
+    if (!response.success || !response.token || !response.data) {
+      throw new Error(response.message || "Google authentication failed");
+    }
+
+    setAuth(response.data, response.token);
+    return response.data;
+  };
+
   // Logout
   const logout = () => {
     localStorage.removeItem("token");
@@ -66,6 +88,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: Boolean(token && user),
     isAdmin: user?.role === "admin",
     setAuth,
+    loginWithGoogle,
     logout,
   };
 

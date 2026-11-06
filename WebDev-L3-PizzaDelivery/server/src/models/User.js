@@ -18,8 +18,24 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId && this.authProvider !== "google";
+      },
       select: false,
+    },
+    googleId: {
+      type: String,
+      default: null,
+      index: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    photoURL: {
+      type: String,
+      default: "",
     },
     phone: {
       type: String,
@@ -61,6 +77,7 @@ const userSchema = new mongoose.Schema(
 
 // Method to verify password
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.passwordHash) return false;
   return await bcrypt.compare(enteredPassword, this.passwordHash);
 };
 
