@@ -98,7 +98,7 @@ export const Login = () => {
 
   return (
     <div
-      className="min-h-screen py-24 px-4 sm:px-6 lg:px-8 flex items-center justify-center relative bg-[#FFFDF7]"
+      className="min-h-svh py-16 sm:py-20 md:py-24 px-3 xs:px-4 sm:px-6 lg:px-8 flex items-center justify-center relative bg-[#FFFDF7]"
       style={{
         backgroundImage: `url(${ingredientPattern})`,
         backgroundRepeat: "repeat",
@@ -108,40 +108,40 @@ export const Login = () => {
       {/* Semi-transparent parchment layer */}
       <div className="absolute inset-0 bg-[#FFFDF7]/92 pointer-events-none" aria-hidden="true" />
 
-      {/* Decorative Warm Ambient Glows */}
-      <div className="absolute top-1/4 -left-20 w-80 h-80 bg-[#FFF0B8]/80 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-[#941508]/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Decorative Warm Ambient Glows — hidden on very small screens to avoid overflow */}
+      <div className="hidden sm:block absolute top-1/4 -left-20 w-80 h-80 bg-[#FFF0B8]/80 rounded-full blur-3xl pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-1/4 -right-20 w-80 h-80 bg-[#941508]/10 rounded-full blur-3xl pointer-events-none" />
 
       <motion.div
         initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md bg-white rounded-3xl border border-[#E8D595] shadow-xl p-8 relative z-10"
+        className="w-full max-w-md bg-white rounded-2xl sm:rounded-3xl border border-[#E8D595] shadow-xl p-5 xs:p-6 sm:p-8 relative z-10"
       >
         {/* Brand Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-xl p-1 mb-3"
+            className="inline-flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#941508] rounded-xl p-1 mb-2 sm:mb-3"
             aria-label="Back to PizzaCrave Home"
           >
-            <div className="w-12 h-12 rounded-full bg-[#941508] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform shrink-0">
-              <Pizza size={26} className="rotate-12" aria-hidden="true" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#941508] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform shrink-0">
+              <Pizza size={22} className="rotate-12 sm:!w-[26px] sm:!h-[26px]" aria-hidden="true" />
             </div>
             <div className="flex flex-col text-left">
-              <span className="text-2xl font-black tracking-tight text-[#941508] leading-tight">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-[#941508] leading-tight">
                 Pizza<span className="text-[#F49A13]">Crave</span>
               </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#7A5C55] -mt-0.5">
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#7A5C55] -mt-0.5">
                 Artisan Pizzeria
               </span>
             </div>
           </Link>
 
-          <h1 className="text-2xl font-black text-[#351B17] tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-[#351B17] tracking-tight">
             Welcome Back!
           </h1>
-          <p className="text-xs text-[#7A5C55] mt-1">
+          <p className="text-[11px] sm:text-xs text-[#7A5C55] mt-1">
             Sign in to track orders, save favorite pizzas, and earn craving points.
           </p>
         </div>
