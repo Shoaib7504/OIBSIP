@@ -35,6 +35,21 @@ export const protect = async (req, res, next) => {
   }
 };
 
+// Optional protect: attaches req.user if a valid token is present, but does not block if omitted
+export const optionalProtect = async (req, res, next) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret");
+      req.user = await User.findById(decoded.id).select("-passwordHash");
+    } catch (err) {
+      // Token expired or invalid, proceed as guest without req.user
+    }
+  }
+
+  next();
+};
+
 // Admin-only authorization
 export const adminOnly = (req, res, next) => {
   if (!req.user || req.user.role !== "admin") {

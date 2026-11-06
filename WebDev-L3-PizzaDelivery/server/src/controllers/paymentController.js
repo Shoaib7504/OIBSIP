@@ -134,20 +134,22 @@ export const getSessionStatus = async (req, res, next) => {
       });
     }
 
-    // Authorization: Owner, Admin, or matching customer email can view payment status
-    const isOwner =
-      order.user && req.user && order.user.toString() === req.user._id.toString();
-    const isAdmin = req.user?.role === "admin";
-    const isMatchingEmail =
-      order.customer?.email &&
-      req.user?.email &&
-      order.customer.email.toLowerCase() === req.user.email.toLowerCase();
+    // Authorization check if user is authenticated: owner, admin, or matching email
+    if (req.user) {
+      const isOwner =
+        order.user && req.user && order.user.toString() === req.user._id.toString();
+      const isAdmin = req.user?.role === "admin";
+      const isMatchingEmail =
+        order.customer?.email &&
+        req.user?.email &&
+        order.customer.email.toLowerCase() === req.user.email.toLowerCase();
 
-    if (!isOwner && !isAdmin && !isMatchingEmail) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to view payment status for this session",
-      });
+      if (!isOwner && !isAdmin && !isMatchingEmail) {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to view payment status for this session",
+        });
+      }
     }
 
     // Resilient fallback: If still Pending, verify payment directly with Stripe

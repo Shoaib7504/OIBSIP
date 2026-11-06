@@ -118,9 +118,9 @@ function AppContent() {
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<UserDashboard />} />
-            <Route path="/payment/success" element={<PaymentSuccess />} />
-            <Route path="/payment/cancel" element={<PaymentCancel />} />
           </Route>
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel" element={<PaymentCancel />} />
           <Route element={<ProtectedRoute adminOnly />}>
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>
