@@ -4,6 +4,7 @@ import {
   loginUser,
   googleAuth,
   getUserProfile,
+  updateUserProfile,
   verifyEmail,
   resendVerificationEmail,
   forgotPassword,
@@ -21,6 +22,7 @@ router.post("/resend-verification", resendVerificationEmail);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/profile", protect, getUserProfile);
+router.patch("/profile", protect, updateUserProfile);
 router.get("/:id", getUserProfile);
 
 export default router;

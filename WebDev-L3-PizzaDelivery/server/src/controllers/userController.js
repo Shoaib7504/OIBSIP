@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import crypto from "crypto";
 import transporter, { getTransporter } from "../config/email.js";
+import { getDefaultAvatar } from "../utils/avatarHelper.js";
 // Helper function to generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "default_jwt_secret", {
@@ -61,6 +62,7 @@ export const registerUser = async (req, res, next) => {
       passwordHash,
       phone: phone || "",
       address: address || {},
+      photoURL: getDefaultAvatar(name.trim()),
       isEmailVerified: false,
       emailVerificationTokenHash,
       emailVerificationExpires: Date.now() + 15 * 60 * 1000,
@@ -174,35 +176,50 @@ export const googleAuth = async (req, res, next) => {
     }
 
     const normalizeEmail = email.trim().toLowerCase();
+    const resolvedName = name?.trim() || "Google User";
+    const resolvedPhoto = photoURL || getDefaultAvatar(resolvedName);
 
     // Check if user already exists
     let user = await User.findOne({ email: normalizeEmail });
 
     if (user) {
-      // If user exists, link Google ID and verify email
       let updated = false;
+
+      // Always update to the latest Google profile name
+      if (name && name.trim() && user.name !== name.trim()) {
+        user.name = name.trim();
+        updated = true;
+      }
+
+      // Always update to the latest Google photo, or default if missing
+      if (photoURL && user.photoURL !== photoURL) {
+        user.photoURL = photoURL;
+        updated = true;
+      } else if (!user.photoURL) {
+        user.photoURL = resolvedPhoto;
+        updated = true;
+      }
+
       if (!user.googleId && googleId) {
         user.googleId = googleId;
         updated = true;
       }
+
       if (!user.isEmailVerified) {
         user.isEmailVerified = true;
         updated = true;
       }
-      if (photoURL && !user.photoURL) {
-        user.photoURL = photoURL;
-        updated = true;
-      }
+
       if (updated) {
         await user.save();
       }
     } else {
       // Create new user authenticated via Google
       user = await User.create({
-        name: name?.trim() || "Google User",
+        name: resolvedName,
         email: normalizeEmail,
         googleId: googleId || null,
-        photoURL: photoURL || "",
+        photoURL: resolvedPhoto,
         authProvider: "google",
         isEmailVerified: true,
         role: "user",
@@ -223,7 +240,81 @@ export const googleAuth = async (req, res, next) => {
         address: user.address || {},
         role: user.role,
         isAdmin: user.role === "admin",
-        photoURL: user.photoURL || photoURL || "",
+        photoURL: user.photoURL,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update user profile (Name, Phone, Address, Photo)
+// PATCH /api/users/profile
+export const updateUserProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const { name, phone, address, photoURL } = req.body;
+
+    if (name !== undefined) {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        return res.status(400).json({
+          success: false,
+          message: "Name cannot be empty",
+        });
+      }
+      user.name = trimmedName;
+    }
+
+    if (phone !== undefined) {
+      user.phone = phone.trim();
+    }
+
+    if (address !== undefined) {
+      user.address = address;
+    }
+
+    if (photoURL !== undefined) {
+      // If photoURL is empty or "remove", fall back to the branded dummy avatar
+      if (!photoURL || photoURL === "remove") {
+        user.photoURL = getDefaultAvatar(user.name);
+      } else {
+        user.photoURL = photoURL.trim();
+      }
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        isAdmin: user.role === "admin",
+        photoURL: user.photoURL,
+        isEmailVerified: user.isEmailVerified,
       },
     });
   } catch (error) {

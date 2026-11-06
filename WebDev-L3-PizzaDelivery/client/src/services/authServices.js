@@ -20,6 +20,11 @@ export const getUserProfile = async () => {
   return response.data;
 };
 
+export const updateUserProfile = async (profileData) => {
+  const response = await api.patch("/api/users/profile", profileData);
+  return response.data;
+};
+
 export const verifyEmail = async (token) => {
   const response = await api.get(`/api/users/verify-email?token=${encodeURIComponent(token)}`);
   return response.data;

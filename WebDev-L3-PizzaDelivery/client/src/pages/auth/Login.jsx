@@ -40,7 +40,7 @@ export const Login = () => {
 
 
   const onSubmit = async (data) => {
-    console.log("Login Form Data:", data);
+
     try {
       const credentials = {
         email: data.email.trim().toLowerCase(),

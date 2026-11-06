@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
@@ -23,12 +23,232 @@ import {
   CalendarDays,
   RefreshCw,
   CreditCard,
+  Camera,
+  Upload,
+  Trash2,
+  Edit3,
+  X,
 } from "lucide-react";
 import { Button } from "../common/Button";
 import { SectionHeader } from "../common/SectionHeader";
 import { useOrderInventory } from "../../context/OrderInventoryContext";
 import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext";
 import { createCheckoutSession } from "../../services/paymentServices";
+import { updateUserProfile } from "../../services/authServices";
+import { uploadProfilePhoto } from "../../config/firebase";
+
+// Profile Photo Management Component
+const ProfilePhotoManager = ({ user, updateUser, showToast }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef(null);
+
+  const isDefaultAvatar = user?.photoURL?.includes("ui-avatars.com");
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      showToast("Please select a valid image (JPEG, PNG, WebP, GIF)", "error");
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast("Image must be under 5MB", "error");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(10);
+
+    try {
+      setUploadProgress(30);
+      const downloadURL = await uploadProfilePhoto(file, user._id || user.id);
+      setUploadProgress(70);
+
+      const response = await updateUserProfile({ photoURL: downloadURL });
+      setUploadProgress(90);
+
+      updateUser({ photoURL: response.data?.photoURL || downloadURL });
+      setUploadProgress(100);
+      showToast("Profile photo updated!", "success");
+      setIsOpen(false);
+    } catch (error) {
+      showToast(error.message || "Failed to upload photo", "error");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (isDefaultAvatar) return;
+
+    setIsUploading(true);
+    try {
+      const response = await updateUserProfile({ photoURL: "remove" });
+      updateUser({ photoURL: response.data?.photoURL });
+      showToast("Photo removed. Default avatar applied.", "success");
+      setIsOpen(false);
+    } catch (error) {
+      showToast(error.message || "Failed to remove photo", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "P";
+
+  return (
+    <>
+      {/* Avatar with edit button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="relative group cursor-pointer"
+        title="Change profile photo"
+      >
+        <div className="w-11 h-11 rounded-full bg-[#941508] flex items-center justify-center overflow-hidden text-white text-base font-bold">
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt={user.name || "Profile"}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                e.currentTarget.parentElement.innerText = userInitial;
+              }}
+            />
+          ) : (
+            userInitial
+          )}
+        </div>
+        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#F49A13] rounded-full flex items-center justify-center border-2 border-white group-hover:scale-110 transition-transform">
+          <Camera size={8} className="text-white" />
+        </div>
+      </button>
+
+      {/* Photo Management Modal */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !isUploading) setIsOpen(false);
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8D595]/50">
+                <h3 className="text-base font-bold text-[#351B17] font-['Poppins',sans-serif]">
+                  Profile Photo
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => !isUploading && setIsOpen(false)}
+                  className="p-1 rounded-full hover:bg-[#FFF0B8] transition-colors cursor-pointer"
+                  disabled={isUploading}
+                >
+                  <X size={18} className="text-[#7A5C55]" />
+                </button>
+              </div>
+
+              {/* Current Photo Preview */}
+              <div className="flex flex-col items-center py-6 px-5">
+                <div className="w-24 h-24 rounded-full bg-[#941508] flex items-center justify-center overflow-hidden text-white text-3xl font-bold mb-4 ring-4 ring-[#E8D595]/40">
+                  {user?.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.name || "Profile"}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        e.currentTarget.parentElement.innerText = userInitial;
+                      }}
+                    />
+                  ) : (
+                    userInitial
+                  )}
+                </div>
+                <p className="text-sm font-semibold text-[#351B17]">{user?.name}</p>
+                <p className="text-xs text-[#7A5C55] mt-0.5">{user?.email}</p>
+
+                {/* Upload Progress */}
+                {isUploading && uploadProgress > 0 && (
+                  <div className="w-full mt-4">
+                    <div className="h-1.5 bg-[#FFF0B8] rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-[#941508] rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${uploadProgress}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                    <p className="text-xs text-[#7A5C55] text-center mt-1.5">Uploading...</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="px-5 pb-5 space-y-2.5">
+                {/* Upload Button */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  aria-label="Upload profile photo"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#941508] text-white text-sm font-bold rounded-xl hover:bg-[#7a1107] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <Upload size={16} />
+                  <span>{isDefaultAvatar ? "Upload Photo" : "Change Photo"}</span>
+                </button>
+
+                {/* Remove Button (only if custom photo) */}
+                {!isDefaultAvatar && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    disabled={isUploading}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-[#941508] text-sm font-bold rounded-xl border border-[#E8D595] hover:bg-[#FFF0B8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <Trash2 size={16} />
+                    <span>Remove Photo</span>
+                  </button>
+                )}
+
+                <p className="text-[10px] text-[#7A5C55] text-center pt-1">
+                  JPEG, PNG, WebP, or GIF • Max 5MB
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
 
 //  Status helpers 
 const ORDER_STAGES = [
@@ -590,7 +810,8 @@ export const UserDashboard = () => {
   const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const { orders, isSyncing, refreshOrders, cancelOrder } = useOrderInventory();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const { showToast } = useCart();
 
   // Backend already returns only the logged-in user's orders
   const userOrders = useMemo(() => orders || [], [orders]);
@@ -691,9 +912,7 @@ export const UserDashboard = () => {
         >
           <div className="flex items-center justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-11 h-11 rounded-full bg-[#941508]">
-                <User size={20} className="text-white" aria-hidden="true" />
-              </div>
+              <ProfilePhotoManager user={user} updateUser={updateUser} showToast={showToast} />
               <div>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-[#351B17] font-['Poppins',sans-serif] leading-tight">
                   Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}!

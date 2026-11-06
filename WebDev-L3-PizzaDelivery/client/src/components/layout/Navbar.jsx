@@ -205,8 +205,20 @@ export const Navbar = () => {
                     }`}
                   >
                     {/* User Avatar Circle */}
-                    <div className="w-7 h-7 rounded-full bg-[#941508] text-white font-black text-xs flex items-center justify-center shadow-2xs">
-                      {userInitial}
+                    <div className="w-7 h-7 rounded-full bg-[#941508] text-white font-black text-xs flex items-center justify-center shadow-2xs overflow-hidden shrink-0">
+                      {user?.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={displayName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            e.currentTarget.parentElement.innerText = userInitial;
+                          }}
+                        />
+                      ) : (
+                        userInitial
+                      )}
                     </div>
 
                     <span className="max-w-[100px] truncate">{firstName}</span>
@@ -240,8 +252,20 @@ export const Navbar = () => {
                         {/* Dropdown Header Card */}
                         <div className="p-4 bg-gradient-to-br from-[#FFF0B8]/60 via-[#FFFDF7] to-white border-b border-[#E8D595]/60">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-[#941508] text-white font-black text-sm flex items-center justify-center shadow-xs shrink-0">
-                              {userInitial}
+                            <div className="w-10 h-10 rounded-full bg-[#941508] text-white font-black text-sm flex items-center justify-center shadow-xs shrink-0 overflow-hidden">
+                              {user?.photoURL ? (
+                                <img
+                                  src={user.photoURL}
+                                  alt={displayName}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                    e.currentTarget.parentElement.innerText = userInitial;
+                                  }}
+                                />
+                              ) : (
+                                userInitial
+                              )}
                             </div>
                             <div className="overflow-hidden">
                               <p className="font-extrabold text-sm text-[#351B17] truncate leading-tight">
@@ -398,8 +422,20 @@ export const Navbar = () => {
               {isAuthenticated && (
                 <div className="p-3.5 mb-2 bg-[#FFF0B8]/60 border border-[#E8D595] rounded-2xl flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#941508] text-white font-black text-sm flex items-center justify-center shadow-xs">
-                      {userInitial}
+                    <div className="w-10 h-10 rounded-full bg-[#941508] text-white font-black text-sm flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+                      {user?.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={displayName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            e.currentTarget.parentElement.innerText = userInitial;
+                          }}
+                        />
+                      ) : (
+                        userInitial
+                      )}
                     </div>
                     <div>
                       <p className="font-extrabold text-sm text-[#351B17] leading-tight">

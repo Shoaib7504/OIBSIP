@@ -47,7 +47,7 @@ export const Register = () => {
   const passwordValue = watch("password");
 
   const onSubmit = async (data) => {
-    console.log("Register Form Data:", data);
+
     try {
       const userData = {
         name: data.fullName.trim(),

@@ -57,11 +57,21 @@ export const AuthProvider = ({ children }) => {
     const firebaseUser = await signInWithGoogle();
     const idToken = await firebaseUser.getIdToken();
 
+    // Extract displayName and photoURL with fallback to providerData
+    const displayName =
+      firebaseUser.displayName ||
+      firebaseUser.providerData?.[0]?.displayName ||
+      "";
+    const photoURL =
+      firebaseUser.photoURL ||
+      firebaseUser.providerData?.[0]?.photoURL ||
+      "";
+
     const response = await googleLoginUser({
-      name: firebaseUser.displayName || "",
+      name: displayName,
       email: firebaseUser.email,
       googleId: firebaseUser.uid,
-      photoURL: firebaseUser.photoURL || "",
+      photoURL,
       idToken,
     });
 
@@ -71,6 +81,15 @@ export const AuthProvider = ({ children }) => {
 
     setAuth(response.data, response.token);
     return response.data;
+  };
+
+  // Update current user profile in state and localStorage
+  const updateUser = (updatedData) => {
+    setUser((prev) => {
+      const merged = { ...prev, ...updatedData };
+      localStorage.setItem("user", JSON.stringify(merged));
+      return merged;
+    });
   };
 
   // Logout
@@ -88,6 +107,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: Boolean(token && user),
     isAdmin: user?.role === "admin",
     setAuth,
+    updateUser,
     loginWithGoogle,
     logout,
   };

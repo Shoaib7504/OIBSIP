@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { getDefaultAvatar } from "../utils/avatarHelper.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -35,7 +36,9 @@ const userSchema = new mongoose.Schema(
     },
     photoURL: {
       type: String,
-      default: "",
+      default: function () {
+        return getDefaultAvatar(this.name);
+      },
     },
     phone: {
       type: String,
