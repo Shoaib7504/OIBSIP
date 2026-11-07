@@ -129,3 +129,30 @@ export const ChiliIcon = ({ size = 20, className = "" }) => (
   </svg>
 );
 
+export const PepperoniIcon = ({ size = 24, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    aria-hidden="true"
+  >
+    {/* Crispy caramelized cupped outer rim */}
+    <circle cx="16" cy="16" r="14.5" fill="#7F1D1D" stroke="#500707" strokeWidth="1" />
+    {/* Inner savory cured pepperoni surface */}
+    <circle cx="16" cy="16" r="13" fill="#B91C1C" />
+    <circle cx="15.5" cy="15.5" r="11.5" fill="#DC2626" opacity="0.9" />
+    {/* Speckles of paprika / seasoning and fat rendered pockets */}
+    <circle cx="12" cy="12" r="1.4" fill="#FCA5A5" opacity="0.85" />
+    <circle cx="19" cy="11.5" r="1.6" fill="#7F1D1D" />
+    <circle cx="16.5" cy="15" r="1.3" fill="#FCA5A5" opacity="0.9" />
+    <circle cx="13" cy="18" r="1.5" fill="#7F1D1D" />
+    <circle cx="19.5" cy="17.5" r="1.2" fill="#FCA5A5" opacity="0.8" />
+    <circle cx="16" cy="20.5" r="1.4" fill="#7F1D1D" />
+    <circle cx="10" cy="15.5" r="0.9" fill="#991B1B" />
+    <circle cx="21" cy="14" r="1" fill="#991B1B" />
+  </svg>
+);
+

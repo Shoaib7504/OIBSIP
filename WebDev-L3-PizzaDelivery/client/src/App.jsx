@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -12,6 +12,7 @@ import { OrderInventoryProvider } from "./context/OrderInventoryContext";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 import { ProtectedRoute, PublicRoute } from "./Routes/ProtectedRoute";
+import { SplashScreen } from "./components/common/SplashScreen";
 // Modals & Overlays
 import { CartDrawer } from "./components/layout/CartDrawer";
 import { CustomizerModal } from "./components/modals/CustomizerModal";
@@ -98,8 +99,21 @@ function FloatingRouteSwitcher() {
 }
 
 function AppContent() {
+  const [showSplash, setShowSplash] = useState(() => {
+    // Show splash screen on initial application load
+    return !sessionStorage.getItem("pizzacrave_splash_shown");
+  });
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem("pizzacrave_splash_shown", "true");
+    setShowSplash(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFDF7] text-[#351B17] font-['Inter',sans-serif] selection:bg-[#941508] selection:text-white flex flex-col">
+      {/* Initial Application Animated Splash Screen */}
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+
       <ScrollToTop />
 
       {/* Sticky Animated Header */}
