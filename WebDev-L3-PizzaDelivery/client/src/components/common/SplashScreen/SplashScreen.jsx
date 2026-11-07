@@ -22,7 +22,7 @@ export const SplashScreen = ({ onComplete }) => {
   useEffect(() => {
     let isMounted = true;
     const startTime = performance.now();
-    const minDisplayDuration = shouldReduceMotion ? 300 : 1400;
+    const minDisplayDuration = shouldReduceMotion ? 1500 : 2000;
 
     // 1. Preload hero pizza image and wait for document fonts
     const preloadPromise = Promise.all([
@@ -38,12 +38,12 @@ export const SplashScreen = ({ onComplete }) => {
     // 2. Smooth progress ticker loop
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev < 40) return prev + 12;
-        if (prev < 75) return prev + 8;
-        if (prev < 90) return prev + 3;
+        if (prev < 30) return Math.min(prev + 2, 30);
+        if (prev < 60) return Math.min(prev + 1.5, 60);
+        if (prev < 85) return Math.min(prev + 0.5, 85);
         return prev;
       });
-    }, 120);
+    }, 150);
 
     // 3. Resolve readiness when real startup tasks finish
     preloadPromise.finally(() => {
@@ -96,10 +96,10 @@ export const SplashScreen = ({ onComplete }) => {
             shouldReduceMotion
               ? { opacity: 0 }
               : {
-                  opacity: 0,
-                  scale: 1.05,
-                  filter: "blur(6px)",
-                }
+                opacity: 0,
+                scale: 1.05,
+                filter: "blur(6px)",
+              }
           }
           transition={{
             duration: shouldReduceMotion ? 0.3 : 0.65,
