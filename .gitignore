@@ -36,4 +36,10 @@ Thumbs.db
 _agents/
 _agent/
 impeccable  
-.graphify-out
+
+# Knowledge graph outputs
+graphify-out/
+*/graphify-out/
+*/**/graphify-out/
+.graphify-out/
+
