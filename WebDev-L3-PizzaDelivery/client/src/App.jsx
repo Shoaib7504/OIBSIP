@@ -32,6 +32,7 @@ import { ForgotPassword } from "./pages/auth/ForgotPassword";
 import { ResetPassword } from "./pages/auth/ResetPassword";
 import { PaymentSuccess } from "./pages/payment/PaymentSuccess";
 import { PaymentCancel } from "./pages/payment/PaymentCancel";
+import { NotFound } from "./pages/NotFound";
 /**
  * Scroll to top or target hash on route transition
  */
@@ -138,8 +139,8 @@ function AppContent() {
           <Route element={<ProtectedRoute adminOnly />}>
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>
-          {/* Catch-all redirect to Home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Catch-all 404 Not Found Page */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
