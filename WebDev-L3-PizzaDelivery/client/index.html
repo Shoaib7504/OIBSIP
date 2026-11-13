@@ -2,25 +2,201 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#941508" />
+    <title>PizzaCrave – Hot &amp; Fresh Artisan Pizza, Delivered Fast</title>
     <meta
       name="description"
-      content="PizzaCrave – Authentic artisan wood-fired Italian pizzas, hand-crafted with farm-fresh produce and delivered hot to your doorstep in 30 minutes."
+      content="PizzaCrave – Authentic artisan wood-fired Italian pizzas, hand-crafted with sourdough, imported San Marzano tomatoes, and whole-milk mozzarella. Delivered hot in 30 minutes."
     />
-    <title>PizzaCrave – Hot &amp; Fresh Pizza, Delivered Fast</title>
-    <!-- Google Fonts: Poppins & Inter -->
+    <meta name="keywords" content="pizza delivery, artisan pizza, wood fired pizza, custom pizza, Italian pizza Little Italy, fresh pizza online, gourmet pizza delivery" />
+    <meta name="author" content="PizzaCrave Pizzeria" />
+    <meta name="theme-color" content="#941508" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://pizzacravehub.vercel.app/" />
+
+    <!-- Favicons & App Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Preconnect & Preload Critical Resources for Core Web Vitals (LCP) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link
+      rel="preload"
+      as="image"
+      href="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1000&auto=format&fit=crop&q=85"
+      fetchpriority="high"
+    />
+
+    <!-- Google Fonts: Poppins & Inter with font-display: swap -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="restaurant" />
+    <meta property="og:site_name" content="PizzaCrave" />
+    <meta property="og:title" content="PizzaCrave – Hot &amp; Fresh Artisan Pizza, Delivered Fast" />
+    <meta
+      property="og:description"
+      content="Authentic artisan wood-fired Italian pizzas, hand-crafted with farm-fresh produce and delivered hot to your doorstep in 30 minutes."
+    />
+    <meta property="og:url" content="https://pizzacravehub.vercel.app/" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&auto=format&fit=crop&q=85" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Artisan wood-fired pizza with vibrant mozzarella and fresh basil" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@PizzaCrave" />
+    <meta name="twitter:creator" content="@PizzaCrave" />
+    <meta name="twitter:title" content="PizzaCrave – Hot &amp; Fresh Artisan Pizza, Delivered Fast" />
+    <meta
+      name="twitter:description"
+      content="Authentic artisan wood-fired Italian pizzas, hand-crafted with farm-fresh produce and delivered hot to your doorstep in 30 minutes."
+    />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&auto=format&fit=crop&q=85" />
+
+    <!-- Schema.org Structured Data (JSON-LD) for LocalBusiness/Restaurant, Menu, and WebSite -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://pizzacravehub.vercel.app/#website",
+            "url": "https://pizzacravehub.vercel.app/",
+            "name": "PizzaCrave",
+            "description": "Artisan Wood-Fired Pizzeria & Fast Online Delivery",
+            "publisher": {
+              "@id": "https://pizzacravehub.vercel.app/#restaurant"
+            }
+          },
+          {
+            "@type": ["Restaurant", "Pizzeria", "FastFoodRestaurant"],
+            "@id": "https://pizzacravehub.vercel.app/#restaurant",
+            "name": "PizzaCrave",
+            "image": [
+              "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&auto=format&fit=crop&q=85"
+            ],
+            "url": "https://pizzacravehub.vercel.app/",
+            "telephone": "+1-800-749-9227",
+            "email": "hello@pizzacrave.com",
+            "priceRange": "$$",
+            "servesCuisine": ["Italian", "Pizza", "Fast Food"],
+            "paymentAccepted": "Cash, Credit Card, Stripe, Apple Pay, Google Pay",
+            "currenciesAccepted": "USD",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "24 Italian Piazza",
+              "addressLocality": "Little Italy",
+              "addressRegion": "NY",
+              "postalCode": "10013",
+              "addressCountry": "US"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 40.7193,
+              "longitude": -73.9972
+            },
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday"
+                ],
+                "opens": "11:00",
+                "closes": "23:00"
+              }
+            ],
+            "hasMenu": "https://pizzacravehub.vercel.app/#menu"
+          },
+          {
+            "@type": "Menu",
+            "@id": "https://pizzacravehub.vercel.app/#menu",
+            "name": "PizzaCrave Artisan Pizza Menu",
+            "url": "https://pizzacravehub.vercel.app/#menu",
+            "hasMenuSection": [
+              {
+                "@type": "MenuSection",
+                "name": "Customer Favorites",
+                "hasMenuItem": [
+                  {
+                    "@type": "MenuItem",
+                    "name": "Classic Margherita",
+                    "description": "San Marzano tomatoes, fresh whole-milk mozzarella, sweet basil, extra virgin olive oil.",
+                    "offers": {
+                      "@type": "Offer",
+                      "price": "14.99",
+                      "priceCurrency": "USD",
+                      "availability": "https://schema.org/InStock"
+                    }
+                  },
+                  {
+                    "@type": "MenuItem",
+                    "name": "Spicy Double Pepperoni",
+                    "description": "Cupped artisan pepperoni slices, crushed chili honey drizzle, whole-milk mozzarella.",
+                    "offers": {
+                      "@type": "Offer",
+                      "price": "17.99",
+                      "priceCurrency": "USD",
+                      "availability": "https://schema.org/InStock"
+                    }
+                  },
+                  {
+                    "@type": "MenuItem",
+                    "name": "BBQ Smoked Chicken",
+                    "description": "Hickory smoked BBQ sauce, tender grilled chicken breast, red onions, fresh cilantro.",
+                    "offers": {
+                      "@type": "Offer",
+                      "price": "18.99",
+                      "priceCurrency": "USD",
+                      "availability": "https://schema.org/InStock"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body class="bg-[#FFFDF7] text-[#351B17] font-['Inter',sans-serif] antialiased selection:bg-[#941508] selection:text-white overflow-x-hidden">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Semantic No-Script Fallback for Non-JS Crawlers & Assistive Tech -->
+      <noscript>
+        <div style="padding: 2rem; max-width: 800px; margin: 0 auto; font-family: sans-serif; color: #351B17; background-color: #FFFDF7;">
+          <h1 style="color: #941508; font-size: 2rem;">PizzaCrave – Artisan Wood-Fired Pizzeria</h1>
+          <p>Hot &amp; Fresh Pizza Delivered Fast in 30 Minutes. Hand-stretched sourdough, imported San Marzano tomatoes, and 100% whole-milk mozzarella baked at 800°F.</p>
+          <h2>Visit or Call Us</h2>
+          <p><strong>Address:</strong> 24 Italian Piazza, Little Italy, NY 10013</p>
+          <p><strong>Phone:</strong> +1 (800) 749-9227</p>
+          <p><strong>Hours:</strong> Open Daily 11:00 AM – 11:00 PM</p>
+          <h2>Signature Menu</h2>
+          <ul>
+            <li><strong>Classic Margherita ($14.99):</strong> San Marzano tomatoes, fresh mozzarella, basil.</li>
+            <li><strong>Spicy Double Pepperoni ($17.99):</strong> Cupped pepperoni, chili honey, mozzarella.</li>
+            <li><strong>BBQ Smoked Chicken ($18.99):</strong> BBQ sauce, grilled chicken, red onions, cilantro.</li>
+            <li><strong>Farm-Fresh Garden Veggie ($16.99):</strong> Bell peppers, red onions, olives, mushrooms.</li>
+          </ul>
+          <p>Please enable JavaScript in your browser to order pizzas online with live tracking and interactive customization.</p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

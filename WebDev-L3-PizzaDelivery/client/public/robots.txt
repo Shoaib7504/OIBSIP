@@ -1,0 +1,10 @@
+# Robots.txt for PizzaCrave (https://pizzacravehub.vercel.app)
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /payment/
+Disallow: /api/
+
+# Sitemap index
+Sitemap: https://pizzacravehub.vercel.app/sitemap.xml

@@ -1,0 +1,19 @@
+{
+  "name": "PizzaCrave – Artisan Pizza Delivery",
+  "short_name": "PizzaCrave",
+  "description": "Hot & fresh artisan wood-fired Italian pizzas, hand-crafted with farm-fresh produce and delivered to your doorstep in 30 minutes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF7",
+  "theme_color": "#941508",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "shopping", "lifestyle"]
+}

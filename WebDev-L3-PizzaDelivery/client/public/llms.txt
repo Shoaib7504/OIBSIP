@@ -1,0 +1,30 @@
+# PizzaCrave — Artisan Wood-Fired Pizzeria & Delivery
+
+> Hot & Fresh Artisan Pizzas Delivered Fast in 30 Minutes.
+
+## Business Overview
+PizzaCrave is an artisan Italian wood-fired pizza kitchen and online delivery platform. Handcrafted using sourdough fermentation, imported Italian San Marzano tomatoes, and whole-milk mozzarella baked in an authentic 800°F stone oven.
+
+## Key Information
+- **Website:** https://pizzacravehub.vercel.app
+- **Location:** 24 Italian Piazza, Little Italy, NY 10013
+- **Phone:** +1 (800) 749-9227
+- **Email:** hello@pizzacrave.com
+- **Delivery Guarantee:** 30 minutes hot-and-fresh doorstep delivery
+- **Price Range:** $$ ($14.99 - $24.99 USD)
+- **Payment Methods:** Stripe, Credit Cards (Visa, MasterCard, American Express), Apple Pay, Google Pay, Cash on Delivery
+- **Dietary Options:** 100% Vegetarian options, Vegan cheese, Gluten-sensitive crusts, Custom pizza builder.
+
+## Signature Menu Items
+- **Classic Margherita ($14.99)**: San Marzano tomatoes, fresh whole-milk mozzarella, sweet basil, extra virgin olive oil.
+- **Spicy Double Pepperoni ($17.99)**: Cupped artisan pepperoni slices, crushed chili honey drizzle, whole-milk mozzarella.
+- **BBQ Smoked Chicken ($18.99)**: Hickory smoked BBQ sauce, tender grilled chicken breast, red onions, fresh cilantro.
+- **Farm-Fresh Garden Veggie ($16.99)**: Bell peppers, red onions, Kalamata black olives, button mushrooms, fresh herbs.
+- **Paneer Supreme ($17.49)**: Spiced grilled paneer cubes, crisp bell peppers, sweet red onions, zesty herb seasoning.
+
+## Interactive Pizza Customizer
+Customers can craft their own custom pizza by choosing:
+1. **Crust**: Traditional Hand-Tossed, Thin & Crispy, Cheese Stuffed, or Gluten-Free Cauliflower.
+2. **Sauces**: Classic San Marzano Marinara, Creamy Garlic Alfredo, Smoky BBQ, or Zesty Pesto.
+3. **Cheeses**: Whole-Milk Mozzarella, Smoked Provolone, Fresh Ricotta, or Vegan Dairy-Free Mozzarella.
+4. **Toppings**: Wide selection of fresh vegetables, premium cured meats, and gourmet spices with live dynamic pricing.

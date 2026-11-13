@@ -34,12 +34,27 @@ import { PaymentSuccess } from "./pages/payment/PaymentSuccess";
 import { PaymentCancel } from "./pages/payment/PaymentCancel";
 import { NotFound } from "./pages/NotFound";
 /**
- * Scroll to top or target hash on route transition
+ * Scroll to top or target hash on route transition & update dynamic meta titles
  */
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
 
   useEffect(() => {
+    // Dynamic SEO Titles per route
+    const routeTitles = {
+      "/": "PizzaCrave – Hot & Fresh Artisan Pizza, Delivered Fast",
+      "/login": "Sign In – PizzaCrave",
+      "/register": "Create Account – PizzaCrave",
+      "/verify-email": "Verify Email – PizzaCrave",
+      "/forgot-password": "Reset Password – PizzaCrave",
+      "/dashboard": "My Active Orders & History – PizzaCrave",
+      "/admin": "Kitchen & Inventory Dashboard – PizzaCrave Admin",
+      "/payment/success": "Payment Successful & Order Confirmed – PizzaCrave",
+      "/payment/cancel": "Payment Incomplete – PizzaCrave",
+    };
+
+    document.title = routeTitles[pathname] || "404 - Page Not Found – PizzaCrave";
+
     if (hash) {
       const elementId = hash.replace("#", "");
       // Allow brief tick for DOM rendering if switching routes
