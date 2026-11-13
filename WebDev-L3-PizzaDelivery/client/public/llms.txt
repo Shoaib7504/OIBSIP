@@ -1,30 +1,24 @@
-# PizzaCrave — Artisan Wood-Fired Pizzeria & Delivery
+# PizzaCrave
 
-> Hot & Fresh Artisan Pizzas Delivered Fast in 30 Minutes.
+> PizzaCrave is an artisan Italian wood-fired pizza kitchen and online delivery platform serving handcrafted sourdough pizzas baked at 800°F with 30-minute hot delivery.
 
-## Business Overview
-PizzaCrave is an artisan Italian wood-fired pizza kitchen and online delivery platform. Handcrafted using sourdough fermentation, imported Italian San Marzano tomatoes, and whole-milk mozzarella baked in an authentic 800°F stone oven.
+## Documentation & Menu
 
-## Key Information
-- **Website:** https://pizzacravehub.vercel.app
-- **Location:** 24 Italian Piazza, Little Italy, NY 10013
-- **Phone:** +1 (800) 749-9227
-- **Email:** hello@pizzacrave.com
-- **Delivery Guarantee:** 30 minutes hot-and-fresh doorstep delivery
-- **Price Range:** $$ ($14.99 - $24.99 USD)
-- **Payment Methods:** Stripe, Credit Cards (Visa, MasterCard, American Express), Apple Pay, Google Pay, Cash on Delivery
-- **Dietary Options:** 100% Vegetarian options, Vegan cheese, Gluten-sensitive crusts, Custom pizza builder.
+- [Artisan Pizza Menu](https://pizzacravehub.vercel.app/#menu): Complete list of artisan wood-fired pizzas, vegetarian specialties, and pricing.
+- [Today's Special Deals](https://pizzacravehub.vercel.app/#deals): Limited-time daily promotions, family bundles, and combo discounts.
+- [Custom Pizza Studio](https://pizzacravehub.vercel.app/#customizer): Interactive custom pizza builder allowing customers to choose crusts, sauces, cheeses, and toppings with live pricing.
+- [Our Pizzeria Story](https://pizzacravehub.vercel.app/#about): Information about sourdough fermentation, imported San Marzano tomatoes, and wood-fired hearth baking.
+- [Delivery Policy & Coverage](https://pizzacravehub.vercel.app/#delivery): 30-minute doorstep delivery guarantee and temperature-controlled insulated packaging.
 
-## Signature Menu Items
-- **Classic Margherita ($14.99)**: San Marzano tomatoes, fresh whole-milk mozzarella, sweet basil, extra virgin olive oil.
-- **Spicy Double Pepperoni ($17.99)**: Cupped artisan pepperoni slices, crushed chili honey drizzle, whole-milk mozzarella.
-- **BBQ Smoked Chicken ($18.99)**: Hickory smoked BBQ sauce, tender grilled chicken breast, red onions, fresh cilantro.
-- **Farm-Fresh Garden Veggie ($16.99)**: Bell peppers, red onions, Kalamata black olives, button mushrooms, fresh herbs.
-- **Paneer Supreme ($17.49)**: Spiced grilled paneer cubes, crisp bell peppers, sweet red onions, zesty herb seasoning.
+## Business Details
 
-## Interactive Pizza Customizer
-Customers can craft their own custom pizza by choosing:
-1. **Crust**: Traditional Hand-Tossed, Thin & Crispy, Cheese Stuffed, or Gluten-Free Cauliflower.
-2. **Sauces**: Classic San Marzano Marinara, Creamy Garlic Alfredo, Smoky BBQ, or Zesty Pesto.
-3. **Cheeses**: Whole-Milk Mozzarella, Smoked Provolone, Fresh Ricotta, or Vegan Dairy-Free Mozzarella.
-4. **Toppings**: Wide selection of fresh vegetables, premium cured meats, and gourmet spices with live dynamic pricing.
+- [Store Location](https://pizzacravehub.vercel.app/#contact): 24 Italian Piazza, Little Italy, NY 10013.
+- [Telephone Orders](tel:+18007499227): Customer service and order inquiry hotline at +1 (800) 749-9227.
+- [Email Support](mailto:hello@pizzacrave.com): General inquiries and business correspondence.
+- [API Health Status](https://pizzacraveserver.vercel.app/api/health): Live operational status of the PizzaCrave backend and database cluster.
+
+## Optional
+
+- [Customer Authentication](https://pizzacravehub.vercel.app/login): Customer account sign-in with email/password and Google Single Sign-On.
+- [Customer Account Registration](https://pizzacravehub.vercel.app/register): Create a new customer profile to save delivery addresses and favorite orders.
+- [Customer Dashboard](https://pizzacravehub.vercel.app/dashboard): Active order tracking pipeline with real-time status updates and order history.

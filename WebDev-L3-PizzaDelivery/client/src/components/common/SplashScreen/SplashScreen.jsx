@@ -97,8 +97,7 @@ export const SplashScreen = ({ onComplete }) => {
               ? { opacity: 0 }
               : {
                 opacity: 0,
-                scale: 1.05,
-                filter: "blur(6px)",
+                scale: 1.06,
               }
           }
           transition={{

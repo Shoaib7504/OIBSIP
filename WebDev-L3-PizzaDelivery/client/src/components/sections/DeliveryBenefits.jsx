@@ -78,6 +78,9 @@ export const DeliveryBenefits = () => {
               <img
                 src={deliverManSvg}
                 alt="Express pizza delivery rider on a motor scooter"
+                width="400"
+                height="380"
+                loading="lazy"
                 className="w-full max-h-[320px] sm:max-h-[380px] object-contain drop-shadow-2xl select-none pointer-events-none"
               />
             </motion.div>

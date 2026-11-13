@@ -24,19 +24,33 @@
     <!-- Preconnect & Preload Critical Resources for Core Web Vitals (LCP) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://pizzacraveserver.vercel.app" crossorigin />
     <link rel="preconnect" href="https://images.unsplash.com" />
     <link
       rel="preload"
       as="image"
-      href="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1000&auto=format&fit=crop&q=85"
+      href="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=540&auto=format&fit=crop&q=75"
       fetchpriority="high"
     />
 
-    <!-- Google Fonts: Poppins & Inter with font-display: swap -->
+    <!-- Google Fonts: Poppins & Inter Non-Render-Blocking -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800;900&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap"
+      />
+    </noscript>
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
     <meta property="og:type" content="restaurant" />

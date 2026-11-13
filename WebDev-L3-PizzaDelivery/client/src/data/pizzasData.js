@@ -1,26 +1,26 @@
 // Pizza Menu Data with high-definition food photography, ratings, tags, and prices
 
 export const PIZZA_IMAGES = {
-  // Hero & Featured
-  heroPizza: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1000&auto=format&fit=crop&q=85",
-  dealPizza: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=900&auto=format&fit=crop&q=85",
-  storyPizza: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&auto=format&fit=crop&q=85",
-  customizerBase: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&auto=format&fit=crop&q=85",
+  // Hero & Featured (Right-sized for display dimensions with 75% quality compression)
+  heroPizza: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=540&auto=format&fit=crop&q=75",
+  dealPizza: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=450&auto=format&fit=crop&q=75",
+  storyPizza: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=450&auto=format&fit=crop&q=75",
+  customizerBase: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=450&auto=format&fit=crop&q=75",
 
-  // Customer Favorites
-  margherita: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&auto=format&fit=crop&q=85",
-  spicyPepperoni: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=800&auto=format&fit=crop&q=85",
-  bbqChicken: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&auto=format&fit=crop&q=85",
+  // Customer Favorites (Optimized for 144px-180px circular display)
+  margherita: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=360&auto=format&fit=crop&q=75",
+  spicyPepperoni: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=360&auto=format&fit=crop&q=75",
+  bbqChicken: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=360&auto=format&fit=crop&q=75",
 
-  // 8 Regular Flavours
-  pepperoniClassic: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=800&auto=format&fit=crop&q=85",
-  farmFreshVeggie: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&auto=format&fit=crop&q=85",
-  cheeseBurst: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?w=800&auto=format&fit=crop&q=85",
-  spicyJalapenoCorn: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=800&auto=format&fit=crop&q=85",
-  mushroomFiesta: "https://images.unsplash.com/photo-1588315029754-2dd089d39a1a?w=800&auto=format&fit=crop&q=85",
-  chickenTikka: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&auto=format&fit=crop&q=85",
-  hawaiianParadise: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&auto=format&fit=crop&q=85",
-  paneerOverload: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=800&auto=format&fit=crop&q=85",
+  // 8 Regular Flavours (Optimized for 160px circular display)
+  pepperoniClassic: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=360&auto=format&fit=crop&q=75",
+  farmFreshVeggie: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=360&auto=format&fit=crop&q=75",
+  cheeseBurst: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?w=360&auto=format&fit=crop&q=75",
+  spicyJalapenoCorn: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=360&auto=format&fit=crop&q=75",
+  mushroomFiesta: "https://images.unsplash.com/photo-1588315029754-2dd089d39a1a?w=360&auto=format&fit=crop&q=75",
+  chickenTikka: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=360&auto=format&fit=crop&q=75",
+  hawaiianParadise: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=360&auto=format&fit=crop&q=75",
+  paneerOverload: "https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=360&auto=format&fit=crop&q=75",
 };
 
 // 3 Customer Favorites

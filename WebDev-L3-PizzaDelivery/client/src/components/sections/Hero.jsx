@@ -173,9 +173,9 @@ export const Hero = () => {
                     className="w-11 h-11 rounded-full object-cover shadow-inner border border-gray-100 shrink-0"
                   />
                   <div>
-                    <h3 className="text-xs font-bold text-[#351B17] leading-tight">
+                    <p className="text-xs font-bold text-[#351B17] leading-tight">
                       {mini.name}
-                    </h3>
+                    </p>
                     <span className="text-[11px] font-extrabold text-[#941508]">
                       {mini.price}
                     </span>
